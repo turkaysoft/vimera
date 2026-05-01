@@ -1,9 +1,9 @@
 # Vimera - Advanced Hash Analysis Software
 
-[![GitHub downloads](https://img.shields.io/github/downloads/turkaysoftware/vimera/total?style=flat&color=1a893c&label=Downloads)](https://github.com/turkaysoftware/vimera/releases)
-[![GitHub stars](https://img.shields.io/github/stars/turkaysoftware/vimera?style=flat&color=0062cc&label=Stars)](https://github.com/turkaysoftware/vimera/stargazers)
-[![GitHub release](https://img.shields.io/github/v/release/turkaysoftware/vimera?style=flat&color=5a32a3&label=Latest%20Release)](https://github.com/turkaysoftware/vimera/releases/latest)
-[![Platform](https://img.shields.io/badge/platform-Windows-b31d28?style=flat&label=Platform)](https://github.com/turkaysoftware/vimera)
+[![GitHub downloads](https://img.shields.io/github/downloads/turkaysoft/vimera/total?style=flat&color=1a893c&label=Downloads)](https://github.com/turkaysoft/vimera/releases)
+[![GitHub stars](https://img.shields.io/github/stars/turkaysoft/vimera?style=flat&color=0062cc&label=Stars)](https://github.com/turkaysoft/vimera/stargazers)
+[![GitHub release](https://img.shields.io/github/v/release/turkaysoft/vimera?style=flat&color=5a32a3&label=Latest%20Release)](https://github.com/turkaysoft/vimera/releases/latest)
+[![Platform](https://img.shields.io/badge/platform-Windows-b31d28?style=flat&label=Platform)](https://github.com/turkaysoft/vimera)
 
 **Vimera** is a professional-grade **hash analysis software** developed by **Eray Türkay**. Designed for data integrity and security verification, Vimera allows you to generate, analyze, and compare file and text hashes with extreme speed. Whether you are verifying a large download or comparing sensitive data, Vimera provides the precision you need.
 
@@ -12,7 +12,7 @@
 ### Donate
 You can support this project by making a donation to help ensure its sustainability and the development of new features.
 
-[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Donate-0a6628?style=flat&logo=buy-me-a-coffee&logoColor=white)](https://buymeacoffee.com/turkaysoftware)
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Donate-0a6628?style=flat&logo=buy-me-a-coffee&logoColor=white)](https://buymeacoffee.com/turkaysoft)
 
 ---
 
@@ -46,7 +46,7 @@ Vimera offers a specialized set of tools for comprehensive data verification:
 
 ## Translation Support
 
-* **Translation Support:** Community-driven localization via the official [Translation Guide](https://github.com/turkaysoftware/vimera/discussions/2).
+* **Translation Support:** Community-driven localization via the official [Translation Guide](https://github.com/turkaysoft/vimera/discussions/2).
 
 ---
 
@@ -63,7 +63,7 @@ Vimera offers a specialized set of tools for comprehensive data verification:
 
 ## Getting Started
 
-1.  Navigate to the **[Releases](https://github.com/turkaysoftware/vimera/releases/latest)** page.
+1.  Navigate to the **[Releases](https://github.com/turkaysoft/vimera/releases/latest)** page.
 2.  Download the latest ZIP file.
 3.  **Extract all files from the ZIP** (Important: Application requires all folder contents to run correctly).
 4.  Launch the executable corresponding to your architecture:
@@ -82,4 +82,4 @@ Vimera offers a specialized set of tools for comprehensive data verification:
 
 ## License
 
-This software is offered free of charge as part of the **Türkay Software solutions package** and is protected under the [**MIT License**](https://github.com/turkaysoftware/vimera?tab=MIT-1-ov-file).
+This software is offered free of charge as part of the **Türkay Software solutions package** and is protected under the [**MIT License**](https://github.com/turkaysoft/vimera?tab=MIT-1-ov-file).
