@@ -66,6 +66,7 @@
     <Reference Include="System" />
     <Reference Include="System.Management" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
@@ -122,7 +123,6 @@
     <Content Include="VimeraLogo.ico" />
     <None Include="vimera_images\vimera_ui\ts_material\ts_close.png" />
     <None Include="vimera_images\vimera_ui\theme_light\tm_update_light.png" />
-    <None Include="vimera_images\vimera_ui\theme_light\tm_ts_wizard_light.png" />
     <None Include="vimera_images\vimera_ui\theme_light\tm_theme_light.png" />
     <None Include="vimera_images\vimera_ui\theme_light\tm_startup_light.png" />
     <None Include="vimera_images\vimera_ui\theme_light\tm_settings_light.png" />
@@ -133,7 +133,6 @@
     <None Include="vimera_images\vimera_ui\theme_light\lm_text_hash_light.png" />
     <None Include="vimera_images\vimera_ui\theme_light\lm_hash_compare_light.png" />
     <None Include="vimera_images\vimera_ui\theme_light\lm_file_hash_light.png" />
-    <None Include="vimera_images\vimera_ui\theme_light\ct_website_light.png" />
     <None Include="vimera_images\vimera_ui\theme_light\ct_stop_light.png" />
     <None Include="vimera_images\vimera_ui\theme_light\ct_start_light.png" />
     <None Include="vimera_images\vimera_ui\theme_light\ct_github_light.png" />
@@ -144,7 +143,6 @@
     <None Include="vimera_images\vimera_ui\theme_light\ct_compare_light.png" />
     <None Include="vimera_images\vimera_ui\theme_light\ct_compare_failed_light.png" />
     <None Include="vimera_images\vimera_ui\theme_dark\tm_update_dark.png" />
-    <None Include="vimera_images\vimera_ui\theme_dark\tm_ts_wizard_dark.png" />
     <None Include="vimera_images\vimera_ui\theme_dark\tm_theme_dark.png" />
     <None Include="vimera_images\vimera_ui\theme_dark\tm_startup_dark.png" />
     <None Include="vimera_images\vimera_ui\theme_dark\tm_settings_dark.png" />
@@ -155,7 +153,6 @@
     <None Include="vimera_images\vimera_ui\theme_dark\lm_text_hash_dark.png" />
     <None Include="vimera_images\vimera_ui\theme_dark\lm_hash_compare_dark.png" />
     <None Include="vimera_images\vimera_ui\theme_dark\lm_file_hash_dark.png" />
-    <None Include="vimera_images\vimera_ui\theme_dark\ct_website_dark.png" />
     <None Include="vimera_images\vimera_ui\theme_dark\ct_stop_dark.png" />
     <None Include="vimera_images\vimera_ui\theme_dark\ct_start_dark.png" />
     <None Include="vimera_images\vimera_ui\theme_dark\ct_github_dark.png" />
