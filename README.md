@@ -24,6 +24,7 @@ You can support this project by making a donation to help ensure its sustainabil
 * **Multilingual:** Fully supports 15+ languages including Arabic, Chinese, English, Turkish, and more.
 * **Portable:** No installation required. Extract the ZIP and start analyzing immediately.
 * **Truly Free:** Professional features provided at no cost, with no hidden paywalls.
+* **Built-in Update Mechanism:** It features a built-in smart update mechanism developed specifically by **Türkaysoft**.
 
 ---
 
