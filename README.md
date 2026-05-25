@@ -83,4 +83,4 @@ Vimera offers a specialized set of tools for comprehensive data verification:
 
 ## License
 
-This software is offered free of charge as part of the **Türkay Software solutions package** and is protected under the [**MIT License**](https://github.com/turkaysoft/vimera?tab=MIT-1-ov-file).
+This software is offered free of charge as part of the **Türkaysoft solutions package** and is protected under the [**MIT License**](https://github.com/turkaysoft/vimera?tab=MIT-1-ov-file).
