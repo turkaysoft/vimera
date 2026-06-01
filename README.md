@@ -20,10 +20,18 @@ You can support this project by making a donation to help ensure its sustainabil
 
 * **Integrity Focused:** Verify file and data authenticity with high-precision hash algorithms.
 * **Pure Performance:** Developed exclusively in **C# and .NET Framework** with **zero external libraries** for maximum efficiency.
+* **Multi-Hash Algorithm Support:** Generate and verify **CRC32, CRC64, MD5, SHA-1, SHA-256, SHA-384, SHA-512** hashes for both files and text with a single click.
+* **Large File Optimization:** Uses streaming buffered reading to process files of **any size** (GB+) without loading entire content into memory — preventing out-of-memory crashes.
+* **Binary Comparison Engine:** Compare two files or two hash strings at the byte level to verify identical content, with instant visual feedback on match/failure.
+* **Drag & Drop Support:** Simply drag any file into the application window to instantly calculate its hash values — no manual path selection needed.
+* **Parallel Hash Generation:** Calculates all selected hash types simultaneously using parallel processing, delivering results significantly faster than sequential generation.
+* **Clipboard Integration:** Copy any generated hash to the clipboard with one click, or paste a hash string directly into the comparison tool for quick verification.
+* **Real-Time Text Hashing:** As you type or modify text in the input field, hash values are updated instantly — providing immediate feedback without requiring a button click.
+* **Export Results:** You can export the generated hash analysis results as the selected hash algorithm extension or as a text document for audit trails and documentation purposes.
+* **Progress Tracking:** Displays visual progress and elapsed time for processing large files.
 * **Modern UI:** Advanced interface featuring Light, Dark, and System theme support.
-* **Multilingual:** Fully supports 15+ languages including Arabic, Chinese, English, Turkish, and more.
+* **Multilingual:** It supports 15 different languages, primarily English. You can access the supported languages here: [Supported Languages](https://github.com/turkaysoft/vimera/discussions/2)
 * **Portable:** No installation required. Extract the ZIP and start analyzing immediately.
-* **Truly Free:** Professional features provided at no cost, with no hidden paywalls.
 * **Built-in Update Mechanism:** It features a built-in smart update mechanism developed specifically by **Türkaysoft**.
 
 ---
@@ -31,17 +39,6 @@ You can support this project by making a donation to help ensure its sustainabil
 ## Interface Preview
 
 <img width="1010" height="633" alt="Vimera UI" src="https://github.com/user-attachments/assets/0fcacc0d-379d-49fb-91ef-3ce7666ec1fe" />
-
----
-
-## Advanced Capabilities
-
-Vimera offers a specialized set of tools for comprehensive data verification:
-
-* **File Hash Analysis:** Generate multiple hash types for files of any size with lightning speed.
-* **Text Hash Generation:** Quickly create secure hashes for strings and text data.
-* **Hash Comparison Tool:** Compare two different hashes or files to ensure binary-level identity.
-* **Multi-Architecture Support:** Native compatibility for x64, x86, and ARM64 processor architectures.
 
 ---
 
