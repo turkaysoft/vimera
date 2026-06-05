@@ -20,7 +20,7 @@ namespace Vimera{
             //
             LabelDeveloper.Text = Application.CompanyName;
             LabelSoftware.Text = Application.ProductName;
-            LabelVersion.Text = TS_VersionEngine.TS_SofwareVersion(1);
+            LabelVersion.Text = TS_VersionEngine.TS_SoftwareVersion(1);
             LabelCopyright.Text = TS_SoftwareCopyrightDate.ts_scd_preloader;
             //
             PanelImg.Padding = new Padding(0, 0, 0, 0);
@@ -253,8 +253,15 @@ namespace Vimera{
                 return;
             }
             var vimera = new VimeraMain();
+            vimera.FormClosed += (s, args) => {
+                Application.Exit();
+            };
             vimera.Show();
-            Hide();
+            BeginInvoke(new Action(() => {
+                if (!IsDisposed && IsHandleCreated){
+                    Hide();
+                }
+            }));
         }
     }
 }

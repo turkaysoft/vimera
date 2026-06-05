@@ -1,99 +1,87 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text;
 using System.Security.Cryptography;
 
 namespace Vimera{
-    public class TSCrcChecksumModule{
-        private static readonly uint[] crc32Table;
-        private static readonly ulong[] crc64Table;
+    public static class TSCrcChecksumModule{
+        internal static readonly uint[] Crc32Table;
+        internal static readonly ulong[] Crc64Table;
         static TSCrcChecksumModule(){
-            // CRC32 (ISO 3309 / Ethernet)
+            // CRC32 Table Create (ISO 3309 / Ethernet)
             uint poly32 = 0xEDB88320;
-            crc32Table = new uint[256];
+            Crc32Table = new uint[256];
             for (uint i = 0; i < 256; i++){
                 uint temp = i;
                 for (int j = 8; j > 0; j--){
-                    if ((temp & 1) == 1){
+                    if ((temp & 1) == 1)
                         temp = (temp >> 1) ^ poly32;
-                    }else{
+                    else
                         temp >>= 1;
-                    }
                 }
-                crc32Table[i] = temp;
+                Crc32Table[i] = temp;
             }
-            // CRC64 (ECMA-182)
+            // CRC64 Table Create (ECMA-182)
             ulong poly64 = 0x42F0E1EBA9EA3693;
-            crc64Table = new ulong[256];
+            Crc64Table = new ulong[256];
             for (ulong i = 0; i < 256; i++){
                 ulong temp = i;
                 for (int j = 0; j < 8; j++){
-                    if ((temp & 1) == 1){
+                    if ((temp & 1) == 1)
                         temp = (temp >> 1) ^ poly64;
-                    }else{
+                    else
                         temp >>= 1;
-                    }
                 }
-                crc64Table[i] = temp;
+                Crc64Table[i] = temp;
             }
         }
+        // Instead of creating a MemoryStream, we return the byte array directly
         public static uint CalculateCrc32(string input){
+            if (input == null) throw new ArgumentNullException(nameof(input));
             byte[] bytes = Encoding.UTF8.GetBytes(input);
-            using (var stream = new MemoryStream(bytes)){
-                return ComputeCrc32(stream);
+            uint crc = 0xFFFFFFFF;
+            for (int i = 0; i < bytes.Length; i++){
+                crc = (crc >> 8) ^ Crc32Table[(crc & 0xFF) ^ bytes[i]];
             }
+            return ~crc;
         }
         public static ulong CalculateCrc64(string input){
+            if (input == null) throw new ArgumentNullException(nameof(input));
             byte[] bytes = Encoding.UTF8.GetBytes(input);
-            using (var stream = new MemoryStream(bytes)){
-                return ComputeCrc64(stream);
+            ulong crc = 0;
+            for (int i = 0; i < bytes.Length; i++){
+                crc = (crc >> 8) ^ Crc64Table[(crc & 0xFF) ^ bytes[i]];
             }
+            return crc;
         }
-        private static uint ComputeCrc32(Stream stream){
+        public static uint ComputeCrc32(Stream stream){
             uint crc = 0xFFFFFFFF;
             const int bufferSize = 4096;
             byte[] buffer = new byte[bufferSize];
             int bytesRead;
             while ((bytesRead = stream.Read(buffer, 0, buffer.Length)) > 0){
                 for (int i = 0; i < bytesRead; i++){
-                    byte b = buffer[i];
-                    crc = (crc >> 8) ^ crc32Table[(crc & 0xFF) ^ b];
+                    crc = (crc >> 8) ^ Crc32Table[(crc & 0xFF) ^ buffer[i]];
                 }
             }
             return ~crc;
         }
-        private static ulong ComputeCrc64(Stream stream){
+        public static ulong ComputeCrc64(Stream stream){
             ulong crc = 0;
             const int bufferSize = 4096;
             byte[] buffer = new byte[bufferSize];
             int bytesRead;
             while ((bytesRead = stream.Read(buffer, 0, buffer.Length)) > 0){
                 for (int i = 0; i < bytesRead; i++){
-                    byte b = buffer[i];
-                    crc = (crc >> 8) ^ crc64Table[(crc & 0xFF) ^ b];
+                    crc = (crc >> 8) ^ Crc64Table[(crc & 0xFF) ^ buffer[i]];
                 }
             }
             return crc;
         }
     }
-    // CRC32
+    // CRC32 Class - Now sharing the table from TSCrcChecksumModule
     public class TSCrc32 : HashAlgorithm{
-        private static readonly uint[] crc32Table;
         private uint crc;
-        static TSCrc32(){
-            uint poly32 = 0xEDB88320;
-            crc32Table = new uint[256];
-            for (uint i = 0; i < 256; i++){
-                uint temp = i;
-                for (int j = 8; j > 0; j--){
-                    if ((temp & 1) == 1){
-                        temp = (temp >> 1) ^ poly32;
-                    }else{
-                        temp >>= 1;
-                    }
-                }
-                crc32Table[i] = temp;
-            }
-        }
         public TSCrc32(){
             HashSizeValue = 32;
             Initialize();
@@ -104,7 +92,7 @@ namespace Vimera{
         protected override void HashCore(byte[] array, int ibStart, int cbSize){
             for (int i = 0; i < cbSize; i++){
                 byte b = array[ibStart + i];
-                crc = (crc >> 8) ^ crc32Table[(crc & 0xFF) ^ b];
+                crc = (crc >> 8) ^ TSCrcChecksumModule.Crc32Table[(crc & 0xFF) ^ b];
             }
         }
         protected override byte[] HashFinal(){
@@ -117,25 +105,9 @@ namespace Vimera{
             return bytes;
         }
     }
-    // CRC64
+    // CRC64 Class - Now sharing the table from TSCrcChecksumModule
     public class TSCrc64 : HashAlgorithm{
-        private static readonly ulong[] crc64Table;
         private ulong crc;
-        static TSCrc64(){
-            ulong poly64 = 0x42F0E1EBA9EA3693;
-            crc64Table = new ulong[256];
-            for (ulong i = 0; i < 256; i++){
-                ulong temp = i;
-                for (int j = 0; j < 8; j++){
-                    if ((temp & 1) == 1){
-                        temp = (temp >> 1) ^ poly64;
-                    }else{
-                        temp >>= 1;
-                    }
-                }
-                crc64Table[i] = temp;
-            }
-        }
         public TSCrc64(){
             HashSizeValue = 64;
             Initialize();
@@ -146,7 +118,7 @@ namespace Vimera{
         protected override void HashCore(byte[] array, int ibStart, int cbSize){
             for (int i = 0; i < cbSize; i++){
                 byte b = array[ibStart + i];
-                crc = (crc >> 8) ^ crc64Table[(crc & 0xFF) ^ b];
+                crc = (crc >> 8) ^ TSCrcChecksumModule.Crc64Table[(crc & 0xFF) ^ b];
             }
         }
         protected override byte[] HashFinal(){

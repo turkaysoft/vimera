@@ -19,6 +19,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
@@ -233,8 +234,8 @@ namespace Vimera {
         }
         // LOAD
         // ====================================================================================================== 
-        private void Vimera_Load(object sender, EventArgs e){
-            Text = TS_VersionEngine.TS_SofwareVersion(0);
+        private void Vimera_Load(object sender, EventArgs e){ 
+            Text = TS_VersionEngine.TS_SoftwareVersion(0);
             HeaderMenu.Cursor = Cursors.Hand;
             RunSoftwareEngine();
             //
@@ -472,14 +473,14 @@ namespace Vimera {
         // FILE HASH PROCESS CHANGED
         // ======================================================================================================
         private void FileHash_BG_Worker_ProgressChanged(object sender, ProgressChangedEventArgs e){
-            Text = TS_VersionEngine.TS_SofwareVersion(0) + " - " + "%" + e.ProgressPercentage;
+            Text = TS_VersionEngine.TS_SoftwareVersion(0) + " - " + "%" + e.ProgressPercentage;
             FileHashLoadFE_Panel.Width = e.ProgressPercentage * FileHashLoadBG_Panel.Width / 100;
         }
         // FILE HASH PROCESS RUNWORKER COMPLETED
         // ======================================================================================================
         private void FileHash_BG_Worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e){
             TSGetLangs software_lang = new TSGetLangs(lang_path);
-            Text = TS_VersionEngine.TS_SofwareVersion(0);
+            Text = TS_VersionEngine.TS_SoftwareVersion(0);
             //
             FileProgressList = null;
             FileHashTotalFiles = 0;
@@ -1493,7 +1494,7 @@ namespace Vimera {
                     handler.UseProxy = false;
                     using (HttpClient httpClient = new HttpClient(handler)){
                         httpClient.Timeout = TimeSpan.FromSeconds(15);
-                        httpClient.DefaultRequestHeaders.CacheControl = new System.Net.Http.Headers.CacheControlHeaderValue{ NoCache = true, NoStore = true, MustRevalidate = true };
+                        httpClient.DefaultRequestHeaders.CacheControl = new CacheControlHeaderValue{ NoCache = true, NoStore = true, MustRevalidate = true };
                         httpClient.DefaultRequestHeaders.Pragma.ParseAdd("no-cache");
                         string versionUrl = TS_LinkSystem.github_link_lv;
                         versionUrl += (versionUrl.Contains("?") ? "&" : "?") + "_ts=" + DateTimeOffset.UtcNow.ToUnixTimeSeconds();
