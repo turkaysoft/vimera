@@ -512,7 +512,7 @@ namespace Vimera{
             // LIGHT THEME COLORS
             // ====================================
             public static readonly Dictionary<string, Color> LightTheme = new Dictionary<string, Color>{
-                // TS PRELOADER
+                // TS TEMPLATE
                 { "TSBT_BGColor", Color.FromArgb(236, 242, 248) },
                 { "TSBT_BGColor2", Color.White },
                 { "TSBT_AccentColor", Color.FromArgb(118, 85, 177) },
@@ -559,7 +559,7 @@ namespace Vimera{
             // DARK THEME COLORS
             // ====================================
             public static readonly Dictionary<string, Color> DarkTheme = new Dictionary<string, Color>{
-                // TS PRELOADER
+                // TS TEMPLATE
                 { "TSBT_BGColor", Color.FromArgb(27, 30, 34) },
                 { "TSBT_BGColor2", Color.FromArgb(34, 38, 44) },
                 { "TSBT_AccentColor", Color.FromArgb(164, 118, 243) },

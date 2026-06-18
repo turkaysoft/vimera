@@ -75,12 +75,6 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="TSModules.cs" />
-    <Compile Include="TSPreloader.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="TSPreloader.Designer.cs">
-      <DependentUpon>TSPreloader.cs</DependentUpon>
-    </Compile>
     <Compile Include="VimeraMain.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -163,8 +157,6 @@
     <None Include="vimera_images\vimera_ui\theme_dark\ct_compare_failed_dark.png" />
     <None Include="vimera_images\vimera_ui\theme_dark\ct_compare_dark.png" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="vimera_images\ts_preloader\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
