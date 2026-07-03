@@ -13,7 +13,7 @@ namespace Vimera{
     internal static class Program{
         // ======================================================================================================
         // GLOBAL SYSTEM INFO
-        public static int windows_mode = 0;
+        public static int Windows_mode { get; private set; } = 0;
         // ======================================================================================================
         // TS UPDATER TEXT
         public static readonly string updater_exe_name = "TSUpdater.exe";
@@ -28,7 +28,7 @@ namespace Vimera{
                 using (var searcher = new ManagementObjectSearcher("root\\CIMV2", "SELECT Caption FROM Win32_OperatingSystem"))
                 using (var results = searcher.Get()){
                     string caption = results.Cast<ManagementObject>().Select(mo => mo["Caption"]?.ToString()).FirstOrDefault();
-                    windows_mode = (caption?.IndexOf("Windows 11", StringComparison.OrdinalIgnoreCase) >= 0) ? 1 : 0;
+                    Windows_mode = (caption?.IndexOf("Windows 11", StringComparison.OrdinalIgnoreCase) >= 0) ? 1 : 0;
                 }
             }catch (Exception){ }
             // ------------------------------------------------------------------
@@ -65,18 +65,21 @@ namespace Vimera{
                 // ENSURE SETTINGS
                 EnsureSettingsFileAndSchema();
                 // DELETE OLD TS UPDATER EXE
-                try{
-                    if (File.Exists(updater_old_exe_name)){
-                        File.Delete(updater_old_exe_name);
-                    }
-                }catch (Exception ex){
-                    Debug.WriteLine($"Could not delete old updater: {ex.Message}");
-                }
+                DeleteOldUpdater();
                 return true;
             }catch (Exception ex){
                 TS_MessageBoxEngine.TS_MessageBox(null, 3, ex.Message);
                 return false;
             }
+        }
+        // OLD UPDATER DELETION WITH RETRY
+        // ======================================================================================================
+        private static void DeleteOldUpdater(){
+            try{
+                if (File.Exists(updater_old_exe_name)){
+                    File.Delete(updater_old_exe_name);
+                }
+            }catch{ }
         }
         // SHOW LANGUAGE ALERT TO USER
         // ======================================================================================================
@@ -108,23 +111,26 @@ namespace Vimera{
         }
         // CONFIGURATION FILE & SCHEMA MANAGEMENT
         // ======================================================================================================
+        private static readonly object _settingsLock = new object();
         private static void EnsureSettingsFileAndSchema(){
-            try{
-                if (!File.Exists(ts_sf)){
-                    var dir = Path.GetDirectoryName(ts_sf);
-                    if (!string.IsNullOrWhiteSpace(dir) && !Directory.Exists(dir)){
-                        Directory.CreateDirectory(dir);
+            lock (_settingsLock){
+                try{
+                    if (!File.Exists(ts_sf)){
+                        var dir = Path.GetDirectoryName(ts_sf);
+                        if (!string.IsNullOrWhiteSpace(dir) && !Directory.Exists(dir)){
+                            Directory.CreateDirectory(dir);
+                        }
+                        File.WriteAllText(ts_sf, string.Empty);
                     }
-                    File.WriteAllText(ts_sf, string.Empty);
-                }
-                string uiLang = CultureInfo.InstalledUICulture.TwoLetterISOLanguageName.Trim();
-                TSSettingsModule settings = new TSSettingsModule(ts_sf);
-                var defaults = GetDefaultSettings(uiLang).ToList();
-                foreach (var (key, valueFactory) in defaults){
-                    EnsureSettingKey(settings, ts_settings_container, key, valueFactory());
-                }
-                settings.TSOrderSectionKeys(ts_settings_container, defaults.Select(x => x.Key));
-            }catch (Exception){ }
+                    string uiLang = CultureInfo.InstalledUICulture.TwoLetterISOLanguageName.Trim();
+                    TSSettingsModule settings = new TSSettingsModule(ts_sf);
+                    var defaults = GetDefaultSettings(uiLang).ToList();
+                    foreach (var (key, valueFactory) in defaults){
+                        EnsureSettingKey(settings, ts_settings_container, key, valueFactory());
+                    }
+                    settings.TSOrderSectionKeys(ts_settings_container, defaults.Select(x => x.Key));
+                }catch (Exception){ }
+            }
         }
         private static void EnsureSettingKey(TSSettingsModule settings, string section, string key, string defaultValue){
             try{

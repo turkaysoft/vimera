@@ -35,7 +35,6 @@ namespace Vimera {
     public partial class VimeraMain : Form {
         public VimeraMain(){
             InitializeComponent();
-            CheckForIllegalCrossThreadCalls = false;
             // LANGUAGE SET TAGS
             // ==================
             arabicToolStripMenuItem.Tag = "ar";
@@ -237,6 +236,7 @@ namespace Vimera {
         private void Vimera_Load(object sender, EventArgs e){ 
             Text = TS_VersionEngine.TS_SoftwareVersion(0);
             HeaderMenu.Cursor = Cursors.Hand;
+            // LOAD MODULE
             RunSoftwareEngine();
             //
             Task softwareUpdateCheck = Task.Run(() => Software_update_check(0));
@@ -640,15 +640,18 @@ namespace Vimera {
         private void File_hash_timer(){
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-            //
             try{
                 while (file_hash_timer_mode){
                     TimeSpan elapsed = stopwatch.Elapsed;
-                    //
                     int fh_second = (int)elapsed.TotalSeconds % 60;
                     int fh_minute = (int)(elapsed.TotalMinutes % 60);
-                    int fh_hour = (int)(elapsed.TotalHours);
-                    FileHashTimer.Text = string.Format("{0:D2}:{1:D2}:{2:D2}", fh_hour, fh_minute, fh_second);
+                    int fh_hour = (int)elapsed.TotalHours;
+                    string time = string.Format("{0:D2}:{1:D2}:{2:D2}", fh_hour, fh_minute, fh_second);
+                    if (FileHashTimer.InvokeRequired){
+                        FileHashTimer.BeginInvoke((MethodInvoker)(() => FileHashTimer.Text = time));
+                    }else{
+                        FileHashTimer.Text = time;
+                    }
                     Thread.Sleep(1000);
                 }
             }catch (Exception){ }
@@ -932,14 +935,14 @@ namespace Vimera {
             if (btn_target != null){
                 if (active_btn != (Button)btn_target){
                     active_btn = (Button)btn_target;
-                    active_btn.BackColor = TS_ThemeEngine.ColorMode(theme, "BtnActiveColor");
+                    active_btn.BackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
                     active_btn.Cursor = Cursors.Default;
                 }
             }
         }
         private void Disabled_page(){
             foreach (Control disabled_btn in LeftPanel.Controls){
-                disabled_btn.BackColor = TS_ThemeEngine.ColorMode(theme, "BtnDeActiveColor");
+                disabled_btn.BackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor");
                 disabled_btn.Cursor = Cursors.Hand;
             }
         }
@@ -1217,168 +1220,168 @@ namespace Vimera {
                 Software_other_page_preloader();
                 // HEADER
                 Header_image_reloader(menu_btns);
-                header_colors[0] = TS_ThemeEngine.ColorMode(theme, "HeaderBGColorMain");
-                header_colors[1] = TS_ThemeEngine.ColorMode(theme, "HeaderFEColorMain");
-                header_colors[2] = TS_ThemeEngine.ColorMode(theme, "AccentColor");
+                header_colors[0] = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
+                header_colors[1] = TS_ThemeEngine.ColorMode(theme, "TSBT_LabelColor1");
+                header_colors[2] = TS_ThemeEngine.ColorMode(theme, "TSBT_AccentColor");
                 HeaderMenu.Renderer = new HeaderMenuColors();
                 // ACTIVE BTN 
-                btn_colors_active[0] = TS_ThemeEngine.ColorMode(theme, "BtnActiveColor");
+                btn_colors_active[0] = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
                 // HEADER PANEL
-                HeaderInPanel.BackColor = TS_ThemeEngine.ColorMode(theme, "HeaderBGColor");
+                HeaderInPanel.BackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor");
                 // HEADER PANEL TEXT
-                HeaderText.ForeColor = TS_ThemeEngine.ColorMode(theme, "HeaderFEColor");
+                HeaderText.ForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_LabelColor1");
                 // HEADER MENU
-                var bg = TS_ThemeEngine.ColorMode(theme, "HeaderBGColor");
-                var fg = TS_ThemeEngine.ColorMode(theme, "HeaderFEColor");
+                var bg = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor");
+                var fg = TS_ThemeEngine.ColorMode(theme, "TSBT_LabelColor1");
                 HeaderMenu.ForeColor = fg;
                 HeaderMenu.BackColor = bg;
                 SetMenuStripColors(HeaderMenu, bg, fg);
                 // LEFT MENU
-                LeftPanel.BackColor = TS_ThemeEngine.ColorMode(theme, "LeftMenuBGAndBorderColor");
-                FileHashBtn.BackColor = TS_ThemeEngine.ColorMode(theme, "LeftMenuBGAndBorderColor");
-                TextHashBtn.BackColor = TS_ThemeEngine.ColorMode(theme, "LeftMenuBGAndBorderColor");
-                HashCompareBtn.BackColor = TS_ThemeEngine.ColorMode(theme, "LeftMenuBGAndBorderColor");
+                LeftPanel.BackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor");
+                FileHashBtn.BackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor");
+                TextHashBtn.BackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor");
+                HashCompareBtn.BackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor");
                 // LEFT MENU BORDER
-                FileHashBtn.FlatAppearance.BorderColor = TS_ThemeEngine.ColorMode(theme, "LeftMenuBGAndBorderColor");
-                TextHashBtn.FlatAppearance.BorderColor = TS_ThemeEngine.ColorMode(theme, "LeftMenuBGAndBorderColor");
-                HashCompareBtn.FlatAppearance.BorderColor = TS_ThemeEngine.ColorMode(theme, "LeftMenuBGAndBorderColor");
+                FileHashBtn.FlatAppearance.BorderColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor");
+                TextHashBtn.FlatAppearance.BorderColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor");
+                HashCompareBtn.FlatAppearance.BorderColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor");
                 // LEFT MENU MOUSE HOVER
-                FileHashBtn.FlatAppearance.MouseOverBackColor = TS_ThemeEngine.ColorMode(theme, "LeftMenuButtonHoverAndMouseDownColor");
-                TextHashBtn.FlatAppearance.MouseOverBackColor = TS_ThemeEngine.ColorMode(theme, "LeftMenuButtonHoverAndMouseDownColor");
-                HashCompareBtn.FlatAppearance.MouseOverBackColor = TS_ThemeEngine.ColorMode(theme, "LeftMenuButtonHoverAndMouseDownColor");
+                FileHashBtn.FlatAppearance.MouseOverBackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
+                TextHashBtn.FlatAppearance.MouseOverBackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
+                HashCompareBtn.FlatAppearance.MouseOverBackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
                 // LEFT MENU MOUSE DOWN
-                FileHashBtn.FlatAppearance.MouseDownBackColor = TS_ThemeEngine.ColorMode(theme, "LeftMenuButtonHoverAndMouseDownColor");
-                TextHashBtn.FlatAppearance.MouseDownBackColor = TS_ThemeEngine.ColorMode(theme, "LeftMenuButtonHoverAndMouseDownColor");
-                HashCompareBtn.FlatAppearance.MouseDownBackColor = TS_ThemeEngine.ColorMode(theme, "LeftMenuButtonHoverAndMouseDownColor");
+                FileHashBtn.FlatAppearance.MouseDownBackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
+                TextHashBtn.FlatAppearance.MouseDownBackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
+                HashCompareBtn.FlatAppearance.MouseDownBackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
                 // LEFT MENU BUTTON TEXT COLOR
-                FileHashBtn.ForeColor = TS_ThemeEngine.ColorMode(theme, "LeftMenuButtonFEColor");
-                TextHashBtn.ForeColor = TS_ThemeEngine.ColorMode(theme, "LeftMenuButtonFEColor");
-                HashCompareBtn.ForeColor = TS_ThemeEngine.ColorMode(theme, "LeftMenuButtonFEColor");
+                FileHashBtn.ForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_LabelColor1");
+                TextHashBtn.ForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_LabelColor1");
+                HashCompareBtn.ForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_LabelColor1");
                 // CONTENT BG
-                BackColor = TS_ThemeEngine.ColorMode(theme, "PageContainerBGAndPageContentTotalColors");
-                FileHash.BackColor = TS_ThemeEngine.ColorMode(theme, "PageContainerBGAndPageContentTotalColors");
-                TextHash.BackColor = TS_ThemeEngine.ColorMode(theme, "PageContainerBGAndPageContentTotalColors");
-                HashCompare.BackColor = TS_ThemeEngine.ColorMode(theme, "PageContainerBGAndPageContentTotalColors");
+                BackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
+                FileHash.BackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
+                TextHash.BackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
+                HashCompare.BackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
                 // FILE HASH
-                FileHashPanel.BackColor = TS_ThemeEngine.ColorMode(theme, "ContentPanelBGColor");
+                FileHashPanel.BackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor");
                 //
-                FileHashAlgorithmSelect.BackColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxBGColor");
-                FileHashAlgorithmSelect.ForeColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxFEColor");
-                FileHashAlgorithmSelect.HoverBackColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxBGColor");
-                FileHashAlgorithmSelect.ButtonColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxBGColor2");
-                FileHashAlgorithmSelect.ArrowColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxFEColor");
-                FileHashAlgorithmSelect.HoverButtonColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxBGColor2");
+                FileHashAlgorithmSelect.BackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
+                FileHashAlgorithmSelect.ForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_LabelColor1");
+                FileHashAlgorithmSelect.HoverBackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
+                FileHashAlgorithmSelect.ButtonColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor");
+                FileHashAlgorithmSelect.ArrowColor = TS_ThemeEngine.ColorMode(theme, "TSBT_LabelColor1");
+                FileHashAlgorithmSelect.HoverButtonColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor");
                 FileHashAlgorithmSelect.BorderColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxBorderColor");
                 FileHashAlgorithmSelect.FocusedBorderColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxBorderColor");
-                FileHashAlgorithmSelect.DisabledBackColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxBGColor");
-                FileHashAlgorithmSelect.DisabledForeColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxFEColor");
-                FileHashAlgorithmSelect.DisabledButtonColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxBGColor2");
-                FileHashAlgorithmSelect.HoverForeColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxFEColor");
-                FileHashAlgorithmSelect.SelectedBackColor = TS_ThemeEngine.ColorMode(theme, "AccentColor");
-                FileHashAlgorithmSelect.SelectedForeColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxBGColor");
+                FileHashAlgorithmSelect.DisabledBackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
+                FileHashAlgorithmSelect.DisabledForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_LabelColor1");
+                FileHashAlgorithmSelect.DisabledButtonColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor");
+                FileHashAlgorithmSelect.HoverForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_LabelColor1");
+                FileHashAlgorithmSelect.SelectedBackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_AccentColor");
+                FileHashAlgorithmSelect.SelectedForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
                 //
-                FileHashSelectFileBtn.BackColor = TS_ThemeEngine.ColorMode(theme, "AccentColor");
-                FileHashSelectFileBtn.FlatAppearance.BorderColor = TS_ThemeEngine.ColorMode(theme, "AccentColor");
-                FileHashSelectFileBtn.FlatAppearance.MouseDownBackColor = TS_ThemeEngine.ColorMode(theme, "AccentColor");
+                FileHashSelectFileBtn.BackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_AccentColor");
+                FileHashSelectFileBtn.FlatAppearance.BorderColor = TS_ThemeEngine.ColorMode(theme, "TSBT_AccentColor");
+                FileHashSelectFileBtn.FlatAppearance.MouseDownBackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_AccentColor");
                 FileHashSelectFileBtn.FlatAppearance.MouseOverBackColor = TS_ThemeEngine.ColorMode(theme, "AccentColorHover");
-                FileHashSelectFileBtn.ForeColor = TS_ThemeEngine.ColorMode(theme, "DynamicThemeActiveBtnBG");
-                FileHashUpperHashMode.BackColor = TS_ThemeEngine.ColorMode(theme, "ContentPanelBGColor");
-                FileHashUpperHashMode.ForeColor = TS_ThemeEngine.ColorMode(theme, "TextBoxFEColor");
-                FileHashUpperHashMode.CheckedColor = TS_ThemeEngine.ColorMode(theme, "AccentColor");
-                FileHashUpperHashMode.CheckMarkColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxBGColor");
+                FileHashSelectFileBtn.ForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
+                FileHashUpperHashMode.BackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor");
+                FileHashUpperHashMode.ForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_LabelColor1");
+                FileHashUpperHashMode.CheckedColor = TS_ThemeEngine.ColorMode(theme, "TSBT_AccentColor");
+                FileHashUpperHashMode.CheckMarkColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
                 FileHashUpperHashMode.UncheckedBorderColor = TS_ThemeEngine.ColorMode(theme, "CheckBoxUnCheckBorderColor");
-                FileHashExportHashsBtn.BackColor = TS_ThemeEngine.ColorMode(theme, "AccentColor");
-                FileHashExportHashsBtn.FlatAppearance.BorderColor = TS_ThemeEngine.ColorMode(theme, "AccentColor");
-                FileHashExportHashsBtn.FlatAppearance.MouseDownBackColor = TS_ThemeEngine.ColorMode(theme, "AccentColor");
+                FileHashExportHashsBtn.BackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_AccentColor");
+                FileHashExportHashsBtn.FlatAppearance.BorderColor = TS_ThemeEngine.ColorMode(theme, "TSBT_AccentColor");
+                FileHashExportHashsBtn.FlatAppearance.MouseDownBackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_AccentColor");
                 FileHashExportHashsBtn.FlatAppearance.MouseOverBackColor = TS_ThemeEngine.ColorMode(theme, "AccentColorHover");
-                FileHashExportHashsBtn.ForeColor = TS_ThemeEngine.ColorMode(theme, "DynamicThemeActiveBtnBG");
-                FileHashLoadFE_Panel.BackColor = TS_ThemeEngine.ColorMode(theme, "AccentColor");
-                FileHashDGV.BackgroundColor = TS_ThemeEngine.ColorMode(theme, "DataGridBGColor");
+                FileHashExportHashsBtn.ForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
+                FileHashLoadFE_Panel.BackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_AccentColor");
+                FileHashDGV.BackgroundColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
                 FileHashDGV.GridColor = TS_ThemeEngine.ColorMode(theme, "DataGridColor");
-                FileHashDGV.DefaultCellStyle.BackColor = TS_ThemeEngine.ColorMode(theme, "DataGridBGColor");
-                FileHashDGV.DefaultCellStyle.ForeColor = TS_ThemeEngine.ColorMode(theme, "DataGridFEColor");
-                FileHashDGV.AlternatingRowsDefaultCellStyle.BackColor = TS_ThemeEngine.ColorMode(theme, "DataGridAlternatingColor");
-                FileHashDGV.ColumnHeadersDefaultCellStyle.BackColor = TS_ThemeEngine.ColorMode(theme, "AccentColor");
-                FileHashDGV.ColumnHeadersDefaultCellStyle.SelectionBackColor = TS_ThemeEngine.ColorMode(theme, "AccentColor");
-                FileHashDGV.ColumnHeadersDefaultCellStyle.ForeColor = TS_ThemeEngine.ColorMode(theme, "DataGridSelectionColor");
-                FileHashDGV.DefaultCellStyle.SelectionBackColor = TS_ThemeEngine.ColorMode(theme, "AccentColor");
-                FileHashDGV.DefaultCellStyle.SelectionForeColor = TS_ThemeEngine.ColorMode(theme, "DataGridSelectionColor");
-                FileHashCompareBtn.BackColor = TS_ThemeEngine.ColorMode(theme, "AccentColor");
-                FileHashCompareBtn.FlatAppearance.BorderColor = TS_ThemeEngine.ColorMode(theme, "AccentColor");
-                FileHashCompareBtn.FlatAppearance.MouseDownBackColor = TS_ThemeEngine.ColorMode(theme, "AccentColor");
+                FileHashDGV.DefaultCellStyle.BackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
+                FileHashDGV.DefaultCellStyle.ForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_LabelColor1");
+                FileHashDGV.AlternatingRowsDefaultCellStyle.BackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor");
+                FileHashDGV.ColumnHeadersDefaultCellStyle.BackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_AccentColor");
+                FileHashDGV.ColumnHeadersDefaultCellStyle.SelectionBackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_AccentColor");
+                FileHashDGV.ColumnHeadersDefaultCellStyle.ForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor");
+                FileHashDGV.DefaultCellStyle.SelectionBackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_AccentColor");
+                FileHashDGV.DefaultCellStyle.SelectionForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor");
+                FileHashCompareBtn.BackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_AccentColor");
+                FileHashCompareBtn.FlatAppearance.BorderColor = TS_ThemeEngine.ColorMode(theme, "TSBT_AccentColor");
+                FileHashCompareBtn.FlatAppearance.MouseDownBackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_AccentColor");
                 FileHashCompareBtn.FlatAppearance.MouseOverBackColor = TS_ThemeEngine.ColorMode(theme, "AccentColorHover");
-                FileHashCompareBtn.ForeColor = TS_ThemeEngine.ColorMode(theme, "DynamicThemeActiveBtnBG");
-                FileHashStartBtn.BackColor = TS_ThemeEngine.ColorMode(theme, "AccentColor"); 
-                FileHashStartBtn.FlatAppearance.BorderColor = TS_ThemeEngine.ColorMode(theme, "AccentColor");
-                FileHashStartBtn.FlatAppearance.MouseDownBackColor = TS_ThemeEngine.ColorMode(theme, "AccentColor");
+                FileHashCompareBtn.ForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
+                FileHashStartBtn.BackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_AccentColor"); 
+                FileHashStartBtn.FlatAppearance.BorderColor = TS_ThemeEngine.ColorMode(theme, "TSBT_AccentColor");
+                FileHashStartBtn.FlatAppearance.MouseDownBackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_AccentColor");
                 FileHashStartBtn.FlatAppearance.MouseOverBackColor = TS_ThemeEngine.ColorMode(theme, "AccentColorHover");
-                FileHashStartBtn.ForeColor = TS_ThemeEngine.ColorMode(theme, "DynamicThemeActiveBtnBG");
-                FileHashStopBtn.BackColor = TS_ThemeEngine.ColorMode(theme, "AccentColor");
-                FileHashStopBtn.FlatAppearance.BorderColor = TS_ThemeEngine.ColorMode(theme, "AccentColor");
-                FileHashStopBtn.FlatAppearance.MouseDownBackColor = TS_ThemeEngine.ColorMode(theme, "AccentColor");
+                FileHashStartBtn.ForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
+                FileHashStopBtn.BackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_AccentColor");
+                FileHashStopBtn.FlatAppearance.BorderColor = TS_ThemeEngine.ColorMode(theme, "TSBT_AccentColor");
+                FileHashStopBtn.FlatAppearance.MouseDownBackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_AccentColor");
                 FileHashStopBtn.FlatAppearance.MouseOverBackColor = TS_ThemeEngine.ColorMode(theme, "AccentColorHover");
-                FileHashStopBtn.ForeColor = TS_ThemeEngine.ColorMode(theme, "DynamicThemeActiveBtnBG");
-                FileHashSizer.BackColor = TS_ThemeEngine.ColorMode(theme, "LeftMenuButtonHoverAndMouseDownColor");
-                FileHashSizer.ForeColor = TS_ThemeEngine.ColorMode(theme, "LeftMenuButtonFEColor");
-                FileHashTimer.BackColor = TS_ThemeEngine.ColorMode(theme, "LeftMenuButtonHoverAndMouseDownColor");
-                FileHashTimer.ForeColor = TS_ThemeEngine.ColorMode(theme, "LeftMenuButtonFEColor");
-                FileHashCompareTextBox.BackColor = TS_ThemeEngine.ColorMode(theme, "TextBoxBGColor");
-                FileHashCompareTextBox.ForeColor = TS_ThemeEngine.ColorMode(theme, "TextBoxFEColor");
+                FileHashStopBtn.ForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
+                FileHashSizer.BackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
+                FileHashSizer.ForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_LabelColor1");
+                FileHashTimer.BackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
+                FileHashTimer.ForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_LabelColor1");
+                FileHashCompareTextBox.BackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
+                FileHashCompareTextBox.ForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_LabelColor1");
                 // TEXT HASH
-                TextHashPanel.BackColor = TS_ThemeEngine.ColorMode(theme, "ContentPanelBGColor");
+                TextHashPanel.BackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor");
                 //
-                TextHashAlgorithmSelect.BackColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxBGColor");
-                TextHashAlgorithmSelect.ForeColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxFEColor");
-                TextHashAlgorithmSelect.HoverBackColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxBGColor");
-                TextHashAlgorithmSelect.ButtonColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxBGColor2");
-                TextHashAlgorithmSelect.ArrowColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxFEColor");
-                TextHashAlgorithmSelect.HoverButtonColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxBGColor2");
+                TextHashAlgorithmSelect.BackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
+                TextHashAlgorithmSelect.ForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_LabelColor1");
+                TextHashAlgorithmSelect.HoverBackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
+                TextHashAlgorithmSelect.ButtonColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor");
+                TextHashAlgorithmSelect.ArrowColor = TS_ThemeEngine.ColorMode(theme, "TSBT_LabelColor1");
+                TextHashAlgorithmSelect.HoverButtonColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor");
                 TextHashAlgorithmSelect.BorderColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxBorderColor");
                 TextHashAlgorithmSelect.FocusedBorderColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxBorderColor");
-                TextHashAlgorithmSelect.HoverForeColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxFEColor");
-                TextHashAlgorithmSelect.SelectedBackColor = TS_ThemeEngine.ColorMode(theme, "AccentColor");
-                TextHashAlgorithmSelect.SelectedForeColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxBGColor");
+                TextHashAlgorithmSelect.HoverForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_LabelColor1");
+                TextHashAlgorithmSelect.SelectedBackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_AccentColor");
+                TextHashAlgorithmSelect.SelectedForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
                 //
-                TextHashL1.ForeColor = TS_ThemeEngine.ColorMode(theme, "LeftMenuButtonFEColor");
-                TextHashL2.ForeColor = TS_ThemeEngine.ColorMode(theme, "LeftMenuButtonFEColor");
-                TextHashL3.ForeColor = TS_ThemeEngine.ColorMode(theme, "LeftMenuButtonFEColor");
-                TextHashOriginalTextBox.BackColor = TS_ThemeEngine.ColorMode(theme, "TextBoxBGColor");
-                TextHashOriginalTextBox.ForeColor = TS_ThemeEngine.ColorMode(theme, "TextBoxFEColor");
-                TextHashSaltingMode.BackColor = TS_ThemeEngine.ColorMode(theme, "ContentPanelBGColor");
-                TextHashSaltingMode.ForeColor = TS_ThemeEngine.ColorMode(theme, "TextBoxFEColor");
-                TextHashSaltingMode.CheckedColor = TS_ThemeEngine.ColorMode(theme, "AccentColor");
-                TextHashSaltingMode.CheckMarkColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxBGColor");
+                TextHashL1.ForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_LabelColor1");
+                TextHashL2.ForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_LabelColor1");
+                TextHashL3.ForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_LabelColor1");
+                TextHashOriginalTextBox.BackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
+                TextHashOriginalTextBox.ForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_LabelColor1");
+                TextHashSaltingMode.BackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor");
+                TextHashSaltingMode.ForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_LabelColor1");
+                TextHashSaltingMode.CheckedColor = TS_ThemeEngine.ColorMode(theme, "TSBT_AccentColor");
+                TextHashSaltingMode.CheckMarkColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
                 TextHashSaltingMode.UncheckedBorderColor = TS_ThemeEngine.ColorMode(theme, "CheckBoxUnCheckBorderColor");
-                TextHashSaltingTextBox.BackColor = TS_ThemeEngine.ColorMode(theme, "TextBoxBGColor");
-                TextHashSaltingTextBox.ForeColor = TS_ThemeEngine.ColorMode(theme, "TextBoxFEColor");
+                TextHashSaltingTextBox.BackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
+                TextHashSaltingTextBox.ForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_LabelColor1");
                 //
-                TextHashSaltingLocateMode.BackColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxBGColor");
-                TextHashSaltingLocateMode.ForeColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxFEColor");
-                TextHashSaltingLocateMode.HoverBackColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxBGColor");
-                TextHashSaltingLocateMode.ButtonColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxBGColor2");
-                TextHashSaltingLocateMode.ArrowColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxFEColor");
-                TextHashSaltingLocateMode.HoverButtonColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxBGColor2");
+                TextHashSaltingLocateMode.BackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
+                TextHashSaltingLocateMode.ForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_LabelColor1");
+                TextHashSaltingLocateMode.HoverBackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
+                TextHashSaltingLocateMode.ButtonColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor");
+                TextHashSaltingLocateMode.ArrowColor = TS_ThemeEngine.ColorMode(theme, "TSBT_LabelColor1");
+                TextHashSaltingLocateMode.HoverButtonColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor");
                 TextHashSaltingLocateMode.BorderColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxBorderColor");
                 TextHashSaltingLocateMode.FocusedBorderColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxBorderColor");
-                TextHashSaltingLocateMode.HoverForeColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxFEColor");
-                TextHashSaltingLocateMode.SelectedBackColor = TS_ThemeEngine.ColorMode(theme, "AccentColor");
-                TextHashSaltingLocateMode.SelectedForeColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxBGColor");
+                TextHashSaltingLocateMode.HoverForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_LabelColor1");
+                TextHashSaltingLocateMode.SelectedBackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_AccentColor");
+                TextHashSaltingLocateMode.SelectedForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
                 //
-                TextHashResultTextBox.BackColor = TS_ThemeEngine.ColorMode(theme, "TextBoxBGColor");
-                TextHashResultTextBox.ForeColor = TS_ThemeEngine.ColorMode(theme, "TextBoxFEColor");
-                TextHashResultCopyBtn.BackColor = TS_ThemeEngine.ColorMode(theme, "AccentColor");
-                TextHashResultCopyBtn.FlatAppearance.BorderColor = TS_ThemeEngine.ColorMode(theme, "AccentColor");
-                TextHashResultCopyBtn.FlatAppearance.MouseDownBackColor = TS_ThemeEngine.ColorMode(theme, "AccentColor");
+                TextHashResultTextBox.BackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
+                TextHashResultTextBox.ForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_LabelColor1");
+                TextHashResultCopyBtn.BackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_AccentColor");
+                TextHashResultCopyBtn.FlatAppearance.BorderColor = TS_ThemeEngine.ColorMode(theme, "TSBT_AccentColor");
+                TextHashResultCopyBtn.FlatAppearance.MouseDownBackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_AccentColor");
                 TextHashResultCopyBtn.FlatAppearance.MouseOverBackColor = TS_ThemeEngine.ColorMode(theme, "AccentColorHover");
-                TextHashResultCopyBtn.ForeColor = TS_ThemeEngine.ColorMode(theme, "DynamicThemeActiveBtnBG");
+                TextHashResultCopyBtn.ForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
                 // HASH COMPARE
-                HashComparePanel.BackColor = TS_ThemeEngine.ColorMode(theme, "ContentPanelBGColor");
-                FirstHashValueLabel.ForeColor = TS_ThemeEngine.ColorMode(theme, "LeftMenuButtonFEColor");
-                FirstHashValueTextBox.BackColor = TS_ThemeEngine.ColorMode(theme, "TextBoxBGColor");
-                FirstHashValueTextBox.ForeColor = TS_ThemeEngine.ColorMode(theme, "TextBoxFEColor");
-                SecondHashValueLabel.ForeColor = TS_ThemeEngine.ColorMode(theme, "LeftMenuButtonFEColor");
-                SecondHashValueTextBox.BackColor = TS_ThemeEngine.ColorMode(theme, "TextBoxBGColor");
-                SecondHashValueTextBox.ForeColor = TS_ThemeEngine.ColorMode(theme, "TextBoxFEColor");
+                HashComparePanel.BackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor");
+                FirstHashValueLabel.ForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_LabelColor1");
+                FirstHashValueTextBox.BackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
+                FirstHashValueTextBox.ForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_LabelColor1");
+                SecondHashValueLabel.ForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_LabelColor1");
+                SecondHashValueTextBox.BackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
+                SecondHashValueTextBox.ForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_LabelColor1");
                 Dynamic_hash_compare_ui(FirstHashValueTextBox.Text.Trim().ToLower() == SecondHashValueTextBox.Text.Trim().ToLower());
                 // ROTATE MENU
                 var buttonMapping = new Dictionary<int, Button>{
@@ -1387,7 +1390,7 @@ namespace Vimera {
                     { 3, HashCompareBtn }
                 };
                 if (buttonMapping.TryGetValue(menu_btns, out var button)){
-                    button.BackColor = TS_ThemeEngine.ColorMode(theme, "PageContainerBGAndPageContentTotalColors");
+                    button.BackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
                 }
             }catch (Exception){ }
         }
@@ -1442,7 +1445,7 @@ namespace Vimera {
                 software_about.Name = software_about_name;
                 if (Application.OpenForms[software_about_name] != null){
                     software_about = (VimeraAbout)Application.OpenForms[software_about_name];
-                    software_about.About_preloader();
+                    software_about.About_Preloader();
                 }
             }catch (Exception){ }
         }
