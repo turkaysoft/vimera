@@ -20,6 +20,7 @@ You can support this project by making a donation to help ensure its sustainabil
 
 * **Privacy First:** Your data stays on your machine; no information is transferred to external servers.
 * **Pure Performance:** Developed exclusively in **C# and .NET Framework** with no external libraries or dependencies.
+* **Portable:** No installation required. Just download it, extract all files from the ZIP, select the appropriate architecture, and run it.
 * **Integrity Focused:** Verify file and data authenticity with high-precision hash algorithms.
 * **Pure Performance:** Developed exclusively in **C# and .NET Framework** with **zero external libraries** for maximum efficiency.
 * **Multi-Hash Algorithm Support:** Generate and verify **CRC32, CRC64, MD5, SHA-1, SHA-256, SHA-384, SHA-512** hashes for both files and text with a single click.
