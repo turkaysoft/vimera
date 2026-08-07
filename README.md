@@ -40,7 +40,7 @@ You can support this project by making a donation to help ensure its sustainabil
 
 ## Interface Preview
 
-<img width="1010" height="633" alt="Vimera UI" src="https://github.com/user-attachments/assets/7d8ad12b-e81a-45b3-a936-113719600713" />
+<img width="1010" height="633" alt="Vimera UI" src="https://github.com/user-attachments/assets/9dca2a94-41f8-47c0-a9e9-02b5997ee387" />
 
 ---
 
