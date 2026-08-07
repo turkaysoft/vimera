@@ -1,4 +1,4 @@
-# Vimera - Advanced Hash Analysis Software
+# Vimera - Hash Analysis Software
 
 [![GitHub downloads](https://img.shields.io/github/downloads/turkaysoft/vimera/total?style=flat&color=1a893c&label=Downloads)](https://github.com/turkaysoft/vimera/releases)
 [![GitHub stars](https://img.shields.io/github/stars/turkaysoft/vimera?style=flat&color=0062cc&label=Stars)](https://github.com/turkaysoft/vimera/stargazers)
