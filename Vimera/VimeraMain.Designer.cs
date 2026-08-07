@@ -465,7 +465,7 @@
             // 
             this.donateToolStripMenuItem.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.donateToolStripMenuItem.Name = "donateToolStripMenuItem";
-            this.donateToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt) 
+            this.donateToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt)
             | System.Windows.Forms.Keys.D)));
             this.donateToolStripMenuItem.Size = new System.Drawing.Size(57, 20);
             this.donateToolStripMenuItem.Text = "Donate";
@@ -482,8 +482,8 @@
             // 
             // MainContent
             // 
-            this.MainContent.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.MainContent.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.MainContent.Controls.Add(this.FileHash);
             this.MainContent.Controls.Add(this.TextHash);
@@ -538,8 +538,8 @@
             this.FileHashDGV.AllowUserToResizeRows = false;
             dataGridViewCellStyle5.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(237)))), ((int)(((byte)(237)))), ((int)(((byte)(237)))));
             this.FileHashDGV.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle5;
-            this.FileHashDGV.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.FileHashDGV.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.FileHashDGV.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.FileHashDGV.BackgroundColor = System.Drawing.Color.White;
@@ -558,7 +558,7 @@
             this.FileHashDGV.Cursor = System.Windows.Forms.Cursors.Hand;
             dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle7.BackColor = System.Drawing.Color.White;
-            dataGridViewCellStyle7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            dataGridViewCellStyle7.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
             dataGridViewCellStyle7.ForeColor = System.Drawing.SystemColors.ControlText;
             dataGridViewCellStyle7.SelectionBackColor = System.Drawing.Color.SlateBlue;
             dataGridViewCellStyle7.SelectionForeColor = System.Drawing.Color.White;
@@ -631,7 +631,7 @@
             // 
             // FileHashLoadBG_Panel
             // 
-            this.FileHashLoadBG_Panel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.FileHashLoadBG_Panel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.FileHashLoadBG_Panel.Controls.Add(this.FileHashLoadFE_Panel);
             this.FileHashLoadBG_Panel.Location = new System.Drawing.Point(8, 47);
@@ -708,7 +708,7 @@
             // 
             // FileHashCompareTextBox
             // 
-            this.FileHashCompareTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            this.FileHashCompareTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.FileHashCompareTextBox.BackColor = System.Drawing.Color.WhiteSmoke;
             this.FileHashCompareTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
@@ -807,7 +807,7 @@
             // 
             // FileHashStartBtn
             // 
-            this.FileHashStartBtn.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            this.FileHashStartBtn.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.FileHashStartBtn.BackColor = System.Drawing.Color.SlateBlue;
             this.FileHashStartBtn.BackgroundColor = System.Drawing.Color.SlateBlue;
@@ -912,8 +912,8 @@
             // 
             // TextHashResultTextBox
             // 
-            this.TextHashResultTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.TextHashResultTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.TextHashResultTextBox.BackColor = System.Drawing.Color.WhiteSmoke;
             this.TextHashResultTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
@@ -930,7 +930,7 @@
             // 
             // TextHashSaltingTextBox
             // 
-            this.TextHashSaltingTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.TextHashSaltingTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.TextHashSaltingTextBox.BackColor = System.Drawing.Color.WhiteSmoke;
             this.TextHashSaltingTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
@@ -1061,7 +1061,7 @@
             // 
             // TextHashOriginalTextBox
             // 
-            this.TextHashOriginalTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.TextHashOriginalTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.TextHashOriginalTextBox.BackColor = System.Drawing.Color.WhiteSmoke;
             this.TextHashOriginalTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
@@ -1146,8 +1146,8 @@
             // 
             // SecondHashValueTextBox
             // 
-            this.SecondHashValueTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.SecondHashValueTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.SecondHashValueTextBox.BackColor = System.Drawing.Color.WhiteSmoke;
             this.SecondHashValueTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
@@ -1179,7 +1179,7 @@
             // 
             // FirstHashValueTextBox
             // 
-            this.FirstHashValueTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.FirstHashValueTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.FirstHashValueTextBox.BackColor = System.Drawing.Color.WhiteSmoke;
             this.FirstHashValueTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
@@ -1333,4 +1333,3 @@
         private System.Windows.Forms.ToolStripMenuItem dutchToolStripMenuItem;
     }
 }
-

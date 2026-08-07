@@ -16,7 +16,7 @@ namespace Vimera{
             //
             PanelHeader.Parent = ImageAbout;
             CloseAboutBtn.Parent = PanelHeader;
-            AboutTable.RowTemplate.Height = (int)(24 * this.DeviceDpi / 96f);
+            AboutTable.RowTemplate.Height = (int)(28 * this.DeviceDpi / 96f);
             AboutTable.Columns.Add("LangName", "Language");
             AboutTable.Columns.Add("LangTranslator", "Translator");
             AboutTable.Columns[0].Width = (int)(110 * this.DeviceDpi / 96f);
@@ -96,7 +96,7 @@ namespace Vimera{
                 TSImageRenderer(About_DonateBtn, VimeraMain.theme == 1 ? Properties.Resources.tm_donate_mc_light : Properties.Resources.tm_donate_mc_dark, 18, ContentAlignment.MiddleRight);
                 //
                 AboutTable.BackgroundColor = TS_ThemeEngine.ColorMode(VimeraMain.theme, "TSBT_BGColor2");
-                AboutTable.GridColor = TS_ThemeEngine.ColorMode(VimeraMain.theme, "DataGridColor");
+                AboutTable.GridColor = TS_ThemeEngine.ColorMode(VimeraMain.theme, "SelectBoxColor");
                 AboutTable.DefaultCellStyle.BackColor = TS_ThemeEngine.ColorMode(VimeraMain.theme, "TSBT_BGColor2");
                 AboutTable.DefaultCellStyle.ForeColor = TS_ThemeEngine.ColorMode(VimeraMain.theme, "TSBT_LabelColor1");
                 AboutTable.AlternatingRowsDefaultCellStyle.BackColor = TS_ThemeEngine.ColorMode(VimeraMain.theme, "TSBT_BGColor");

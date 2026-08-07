@@ -167,7 +167,7 @@ namespace Vimera {
                 FileHashDGV.Columns.Add("FileHash", "FileHash");
                 FileHashDGV.Columns.Add("TextHash", "TextHash");
                 FileHashDGV.Columns.Add("HashCompare", "HashCompare");
-                FileHashDGV.RowTemplate.Height = (int)(26 * this.DeviceDpi / 96f);
+                FileHashDGV.RowTemplate.Height = (int)(32 * this.DeviceDpi / 96f);
                 FileHashDGV.Columns[0].Width = (int)(250 * this.DeviceDpi / 96f);
                 FileHashDGV.Columns[1].Width = (int)(100 * this.DeviceDpi / 96f);
                 foreach (DataGridViewColumn columnPadding in FileHashDGV.Columns){
@@ -233,7 +233,7 @@ namespace Vimera {
         }
         // LOAD
         // ====================================================================================================== 
-        private void Vimera_Load(object sender, EventArgs e){ 
+        private void Vimera_Load(object sender, EventArgs e){
             Text = TS_VersionEngine.TS_SoftwareVersion(0);
             HeaderMenu.Cursor = Cursors.Hand;
             // LOAD MODULE
@@ -388,74 +388,73 @@ namespace Vimera {
                 return;
             }
             //
-            TSGetLangs software_lang = new TSGetLangs(lang_path);
             file_hash_timer_mode = true;
-            //
-            Task file_hash_timers = new Task(File_hash_timer);
-            file_hash_timers.Start();
-            //
-            int buffer_size = 128 * 1024; // 128 KB
-            //
-            FileHashTotalFiles = FileHashDGV.Rows.Count;
-            FileProgressList = new List<int>(new int[FileHashTotalFiles]);
-            //
-            object lockObject = new object();
-            int processedFiles = 0;
-            //
-            var fileRows = FileHashDGV.Rows.Cast<DataGridViewRow>().Select((row, index) => new { Index = index, FilePath = row.Cells[0].Value?.ToString(), Row = row }).Where(x => !string.IsNullOrEmpty(x.FilePath)).ToList();
-            Parallel.ForEach(fileRows, (item, state) => {
-                if (FileHash_BG_Worker.CancellationPending){
-                    e.Cancel = true;
-                    state.Stop();
-                    return;
-                }
-                try{
-                    byte[] buffer = new byte[buffer_size];
-                    long total_bytes_read = 0;
-                    using (Stream file = File.OpenRead(item.FilePath))
-                    using (HashAlgorithm hasher = GetHashAlgorithm(file_hash_algorithm_mode)){
-                        if (hasher == null)
-                            return;
-
-                        long size = file.Length;
-                        int bytes_read;
-
-                        do{
-                            if (FileHash_BG_Worker.CancellationPending){
-                                e.Cancel = true;
-                                state.Stop();
+            try{
+                TSGetLangs software_lang = new TSGetLangs(lang_path);
+                //
+                Task file_hash_timers = new Task(File_hash_timer);
+                file_hash_timers.Start();
+                //
+                int buffer_size = 128 * 1024; // 128 KB
+                //
+                FileHashTotalFiles = FileHashDGV.Rows.Count;
+                FileProgressList = new List<int>(new int[FileHashTotalFiles]);
+                //
+                object lockObject = new object();
+                int processedFiles = 0;
+                //
+                var fileRows = FileHashDGV.Rows.Cast<DataGridViewRow>().Select((row, index) => new { Index = index, FilePath = row.Cells[0].Value?.ToString(), Row = row }).Where(x => !string.IsNullOrEmpty(x.FilePath)).ToList();
+                Parallel.ForEach(fileRows, (item, state) => {
+                    if (FileHash_BG_Worker.CancellationPending){
+                        state.Stop();
+                        return;
+                    }
+                    try{
+                        byte[] buffer = new byte[buffer_size];
+                        long total_bytes_read = 0;
+                        using (Stream file = File.OpenRead(item.FilePath))
+                        using (HashAlgorithm hasher = GetHashAlgorithm(file_hash_algorithm_mode)){
+                            if (hasher == null)
                                 return;
-                            }
 
-                            bytes_read = file.Read(buffer, 0, buffer_size);
-                            total_bytes_read += bytes_read;
-                            hasher.TransformBlock(buffer, 0, bytes_read, null, 0);
-                            int progressPercentage = (int)((double)total_bytes_read / size * 100);
-                            lock (lockObject){
-                                FileProgressList[item.Index] = progressPercentage;
-                            }
-                        } while (bytes_read > 0);
-                        hasher.TransformFinalBlock(buffer, 0, 0);
-                        //
-                        if (item.Row.DataGridView.InvokeRequired){
-                            item.Row.DataGridView.Invoke((MethodInvoker)(() => {
+                            long size = file.Length;
+                            int bytes_read;
+
+                            do{
+                                if (FileHash_BG_Worker.CancellationPending){
+                                    state.Stop();
+                                    return;
+                                }
+
+                                bytes_read = file.Read(buffer, 0, buffer_size);
+                                total_bytes_read += bytes_read;
+                                hasher.TransformBlock(buffer, 0, bytes_read, null, 0);
+                                int progressPercentage = (int)((double)total_bytes_read / size * 100);
+                                lock (lockObject){
+                                    FileProgressList[item.Index] = progressPercentage;
+                                }
+                            } while (bytes_read > 0);
+                            hasher.TransformFinalBlock(buffer, 0, 0);
+                            //
+                            if (item.Row.DataGridView.InvokeRequired){
+                                item.Row.DataGridView.Invoke((MethodInvoker)(() => {
+                                    item.Row.Cells[2].Value = HashStringRotate(hasher.Hash);
+                                }));
+                            }else{
                                 item.Row.Cells[2].Value = HashStringRotate(hasher.Hash);
-                            }));
-                        }else{
-                            item.Row.Cells[2].Value = HashStringRotate(hasher.Hash);
+                            }
                         }
-                    }
-                    //
-                    lock (lockObject){
-                        processedFiles++;
-                        int overallProgress = (int)((double)processedFiles / FileHashTotalFiles * 100);
-                        FileHash_BG_Worker.ReportProgress(overallProgress);
-                    }
-                }catch (Exception){ }
-                finally{
-                    file_hash_timer_mode = false;
-                }
-            });
+                        //
+                        lock (lockObject){
+                            processedFiles++;
+                            int overallProgress = (int)((double)processedFiles / FileHashTotalFiles * 100);
+                            FileHash_BG_Worker.ReportProgress(overallProgress);
+                        }
+                    }catch (Exception){ }
+                });
+            }finally{
+                file_hash_timer_mode = false;
+            }
         }
         // HASH ALGORITHM SELECTION METHOD
         private HashAlgorithm GetHashAlgorithm(int algorithmMode){
@@ -581,17 +580,23 @@ namespace Vimera {
         // FILE HASH VALUE UPPER & LOWER CASE FUNCTION
         // ======================================================================================================
         private void FileHashUpperHashMode_CheckedChanged(object sender, EventArgs e){
-            if (FileHashUpperHashMode.Checked == true){
-                for (int i = 0; i<= FileHashDGV.Rows.Count - 1; i++){
-                    string select_hash = FileHashDGV.Rows[i].Cells[2].Value.ToString().ToUpper();
-                    FileHashDGV.Rows[i].Cells[2].Value = select_hash;
+            try{
+                if (FileHashUpperHashMode.Checked == true){
+                    for (int i = 0; i<= FileHashDGV.Rows.Count - 1; i++){
+                        var cellValue = FileHashDGV.Rows[i].Cells[2].Value;
+                        if (cellValue != null){
+                            FileHashDGV.Rows[i].Cells[2].Value = cellValue.ToString().ToUpper();
+                        }
+                    }
+                }else if (FileHashUpperHashMode.Checked == false){
+                    for (int i = 0; i <= FileHashDGV.Rows.Count - 1; i++){
+                        var cellValue = FileHashDGV.Rows[i].Cells[2].Value;
+                        if (cellValue != null){
+                            FileHashDGV.Rows[i].Cells[2].Value = cellValue.ToString().ToLower();
+                        }
+                    }
                 }
-            }else if (FileHashUpperHashMode.Checked == false){
-                for (int i = 0; i <= FileHashDGV.Rows.Count - 1; i++){
-                    string select_hash = FileHashDGV.Rows[i].Cells[2].Value.ToString().ToLower();
-                    FileHashDGV.Rows[i].Cells[2].Value = select_hash;
-                }
-            }
+            }catch (Exception){ }
         }
         // FILE HASH DGV CELL CLICK COPY HASH
         // ======================================================================================================
@@ -688,16 +693,16 @@ namespace Vimera {
                     FileName = string.Format(software_lang.TSReadLangs("FileHashPrintEngine", "fhpe_save_file_name"), Application.ProductName),
                     Filter = file_hash_current_mode + "|" + software_lang.TSReadLangs("FileHashPrintEngine", "fhpe_document_txt") + " (*.txt)|*.txt"
                 };
-                if (save_engine.ShowDialog() == DialogResult.OK){
-                    String combinedText = String.Join(Environment.NewLine, PrintEngineList);
-                    File.WriteAllText(save_engine.FileName, combinedText);
-                    DialogResult vimera_print_engine_query = TS_MessageBoxEngine.TS_MessageBox(this, 5, string.Format(software_lang.TSReadLangs("FileHashPrintEngine", "fhpe_save_hash_success"), Application.ProductName, save_engine.FileName, "\n\n"));
-                    if (vimera_print_engine_query == DialogResult.Yes){
-                        Process.Start(save_engine.FileName);
+                try{
+                    if (save_engine.ShowDialog() == DialogResult.OK){
+                        String combinedText = String.Join(Environment.NewLine, PrintEngineList);
+                        File.WriteAllText(save_engine.FileName, combinedText);
+                        DialogResult vimera_print_engine_query = TS_MessageBoxEngine.TS_MessageBox(this, 5, string.Format(software_lang.TSReadLangs("FileHashPrintEngine", "fhpe_save_hash_success"), Application.ProductName, save_engine.FileName, "\n\n"));
+                        if (vimera_print_engine_query == DialogResult.Yes){
+                            Process.Start(save_engine.FileName);
+                        }
                     }
-                    PrintEngineList.Clear();
-                    save_engine.Dispose();
-                }else{
+                }finally{
                     PrintEngineList.Clear();
                     save_engine.Dispose();
                 }
@@ -1008,17 +1013,18 @@ namespace Vimera {
             }
             return base.ProcessCmdKey(ref msg, keyData);
         }
-        // LANG MODE
+        // LANGUAGES SETTINGS
         // ======================================================================================================
+        private ToolStripMenuItem selected_lang = null;
         private void Select_lang_active(object target_lang){
-            ToolStripMenuItem selected_lang = null;
+            if (target_lang == null)
+                return;
+            ToolStripMenuItem clicked_lang = (ToolStripMenuItem)target_lang;
+            if (selected_lang == clicked_lang)
+                return;
             Select_lang_deactive();
-            if (target_lang != null){
-                if (selected_lang != (ToolStripMenuItem)target_lang){
-                    selected_lang = (ToolStripMenuItem)target_lang;
-                    selected_lang.Checked = true;
-                }
-            }
+            selected_lang = clicked_lang;
+            selected_lang.Checked = true;
         }
         private void Select_lang_deactive(){
             foreach (ToolStripMenuItem disabled_lang in languageToolStripMenuItem.DropDownItems){
@@ -1271,8 +1277,8 @@ namespace Vimera {
                 FileHashAlgorithmSelect.ButtonColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor");
                 FileHashAlgorithmSelect.ArrowColor = TS_ThemeEngine.ColorMode(theme, "TSBT_LabelColor1");
                 FileHashAlgorithmSelect.HoverButtonColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor");
-                FileHashAlgorithmSelect.BorderColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxBorderColor");
-                FileHashAlgorithmSelect.FocusedBorderColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxBorderColor");
+                FileHashAlgorithmSelect.BorderColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxColor");
+                FileHashAlgorithmSelect.FocusedBorderColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxColor");
                 FileHashAlgorithmSelect.DisabledBackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
                 FileHashAlgorithmSelect.DisabledForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_LabelColor1");
                 FileHashAlgorithmSelect.DisabledButtonColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor");
@@ -1297,7 +1303,7 @@ namespace Vimera {
                 FileHashExportHashsBtn.ForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
                 FileHashLoadFE_Panel.BackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_AccentColor");
                 FileHashDGV.BackgroundColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
-                FileHashDGV.GridColor = TS_ThemeEngine.ColorMode(theme, "DataGridColor");
+                FileHashDGV.GridColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxColor");
                 FileHashDGV.DefaultCellStyle.BackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
                 FileHashDGV.DefaultCellStyle.ForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_LabelColor1");
                 FileHashDGV.AlternatingRowsDefaultCellStyle.BackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor");
@@ -1336,8 +1342,8 @@ namespace Vimera {
                 TextHashAlgorithmSelect.ButtonColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor");
                 TextHashAlgorithmSelect.ArrowColor = TS_ThemeEngine.ColorMode(theme, "TSBT_LabelColor1");
                 TextHashAlgorithmSelect.HoverButtonColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor");
-                TextHashAlgorithmSelect.BorderColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxBorderColor");
-                TextHashAlgorithmSelect.FocusedBorderColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxBorderColor");
+                TextHashAlgorithmSelect.BorderColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxColor");
+                TextHashAlgorithmSelect.FocusedBorderColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxColor");
                 TextHashAlgorithmSelect.HoverForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_LabelColor1");
                 TextHashAlgorithmSelect.SelectedBackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_AccentColor");
                 TextHashAlgorithmSelect.SelectedForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
@@ -1361,8 +1367,8 @@ namespace Vimera {
                 TextHashSaltingLocateMode.ButtonColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor");
                 TextHashSaltingLocateMode.ArrowColor = TS_ThemeEngine.ColorMode(theme, "TSBT_LabelColor1");
                 TextHashSaltingLocateMode.HoverButtonColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor");
-                TextHashSaltingLocateMode.BorderColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxBorderColor");
-                TextHashSaltingLocateMode.FocusedBorderColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxBorderColor");
+                TextHashSaltingLocateMode.BorderColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxColor");
+                TextHashSaltingLocateMode.FocusedBorderColor = TS_ThemeEngine.ColorMode(theme, "SelectBoxColor");
                 TextHashSaltingLocateMode.HoverForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_LabelColor1");
                 TextHashSaltingLocateMode.SelectedBackColor = TS_ThemeEngine.ColorMode(theme, "TSBT_AccentColor");
                 TextHashSaltingLocateMode.SelectedForeColor = TS_ThemeEngine.ColorMode(theme, "TSBT_BGColor2");
@@ -1451,15 +1457,16 @@ namespace Vimera {
         }
         // STARTUP SETINGS
         // ======================================================================================================
+        private ToolStripMenuItem selected_startup_mode = null;
         private void Select_startup_mode_active(object target_startup_mode){
-            ToolStripMenuItem selected_startup_mode = null;
+            if (target_startup_mode == null)
+                return;
+            ToolStripMenuItem clicked_startup_mode = (ToolStripMenuItem)target_startup_mode;
+            if (selected_startup_mode == clicked_startup_mode)
+                return;
             Select_startup_mode_deactive();
-            if (target_startup_mode != null){
-                if (selected_startup_mode != (ToolStripMenuItem)target_startup_mode){
-                    selected_startup_mode = (ToolStripMenuItem)target_startup_mode;
-                    selected_startup_mode.Checked = true;
-                }
-            }
+            selected_startup_mode = clicked_startup_mode;
+            selected_startup_mode.Checked = true;
         }
         private void Select_startup_mode_deactive(){
             foreach (ToolStripMenuItem disabled_startup in startupToolStripMenuItem.DropDownItems){
