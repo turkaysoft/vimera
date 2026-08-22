@@ -239,7 +239,7 @@ namespace Vimera {
             // LOAD MODULE
             RunSoftwareEngine();
             //
-            Task softwareUpdateCheck = Task.Run(() => Software_update_check(0));
+            Task.Run(() => Software_update_check(0));
         }
         // ======================================================================================================
         // FILE HASH
