@@ -1,10 +1,10 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Management;
 using System.Diagnostics;
 using System.Windows.Forms;
 using System.Globalization;
+using System.Threading;
 using System.Collections.Generic;
 // TS Modules
 using static Vimera.TSModules;
@@ -12,25 +12,41 @@ using static Vimera.TSModules;
 namespace Vimera{
     internal static class Program{
         // ======================================================================================================
-        // GLOBAL SYSTEM INFO
-        public static int Windows_mode { get; private set; } = 0;
+        // CONTEXT MENU LAUNCH ARGS
+        public static int StartupHashMode { get; private set; } = -1;
+        public static string[] StartupFiles { get; private set; } = new string[0];
+        private static Mutex appMutex;
         // ======================================================================================================
         // TS UPDATER TEXT
         public static readonly string updater_exe_name = "TSUpdater.exe";
         public static readonly string updater_old_exe_name = "TSUpdater.exe.old";
         // ======================================================================================================
         [STAThread]
-        static void Main(){
-            SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+        static void Main(string[] args){
             // ------------------------------------------------------------------
-            // CHECK WINDOWS VERSION
+            // PARSE CONTEXT MENU ARGS
             try{
-                using (var searcher = new ManagementObjectSearcher("root\\CIMV2", "SELECT Caption FROM Win32_OperatingSystem"))
-                using (var results = searcher.Get()){
-                    string caption = results.Cast<ManagementObject>().Select(mo => mo["Caption"]?.ToString()).FirstOrDefault();
-                    Windows_mode = (caption?.IndexOf("Windows 11", StringComparison.OrdinalIgnoreCase) >= 0) ? 1 : 0;
+                TSContextMenuModule.CtxLaunchArgs parsed = TSContextMenuModule.ParseArgs(args);
+                if (parsed != null){
+                    StartupHashMode = parsed.HashMode;
+                    StartupFiles = parsed.Files != null ? parsed.Files.ToArray() : new string[0];
                 }
             }catch (Exception){ }
+            // ------------------------------------------------------------------
+            // SINGLE INSTANCE
+            bool isFirstInstance;
+            try{
+                appMutex = new Mutex(true, TSContextMenuModule.MutexName, out isFirstInstance);
+            }catch (Exception){
+                isFirstInstance = true;
+            }
+            if (!isFirstInstance){
+                try{
+                    List<string> forward = StartupFiles != null ? new List<string>(StartupFiles) : new List<string>();
+                    TSContextMenuModule.ForwardToFirstInstance(StartupHashMode, forward);
+                }catch (Exception){ }
+                return;
+            }
             // ------------------------------------------------------------------
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
@@ -40,7 +56,17 @@ namespace Vimera{
                 return;
             }
             // -----------------------------------
-            Application.Run(new VimeraMain());
+            try{
+                Application.Run(new VimeraMain());
+            }finally{
+                try{
+                    if (appMutex != null){
+                        try{ appMutex.ReleaseMutex(); }catch{ }
+                        try{ appMutex.Dispose(); }catch{ }
+                        appMutex = null;
+                    }
+                }catch{ }
+            }
         }
         // TS HYPER LOADER WRAPPER
         // ======================================================================================================
@@ -158,12 +184,18 @@ namespace Vimera{
             ---------------------------
             1 = Full Screen
             0 = Windowed
+
+            -- ContextMenuStatus
+            ---------------------------
+            1 = On
+            0 = Off
         */
         private static IEnumerable<(string Key, Func<string> ValueFactory)> GetDefaultSettings(string uiLang){
             // GLOBAL
             yield return ("ThemeStatus", () => Convert.ToString(TSThemeModeHelper.GetSystemTheme(2)));
             yield return ("LanguageStatus", () => TSPreloaderSetDefaultLanguage(uiLang));
             yield return ("StartupStatus", () => "0");
+            yield return ("ContextMenuStatus", () => "0");
         }
     }
 }

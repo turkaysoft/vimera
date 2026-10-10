@@ -69,8 +69,9 @@ namespace Vimera {
             russianToolStripMenuItem.Click += LanguageToolStripMenuItem_Click;
             spanishToolStripMenuItem.Click += LanguageToolStripMenuItem_Click;
             turkishToolStripMenuItem.Click += LanguageToolStripMenuItem_Click;
-            //
-            SystemEvents.UserPreferenceChanged += (s, e) => TSUseSystemTheme();
+            // DYNAMIC THEME LISTENER
+            // ==================
+            SystemEvents.UserPreferenceChanged += SystemEvents_UserPreferenceChanged;
         }
         // GLOBAL VARIABLES
         // ======================================================================================================
@@ -78,7 +79,15 @@ namespace Vimera {
         public static int theme, themeSystem;
         // VARIABLES
         // ======================================================================================================
-        int menu_btns = 1, menu_rp = 1, startup_status;
+        int menu_btns = 1, menu_rp = 1, startup_status, context_menu_status;
+        // CONTEXT MENU IPC BUFFER (classic right-click -> single instance aggregation)
+        // ======================================================================================================
+        private readonly List<string> ctx_file_buffer = new List<string>();
+        private int ctx_hash_buffer = -1;
+        private readonly object ctx_buffer_lock = new object();
+        private System.Windows.Forms.Timer ctx_aggregator;
+        private volatile bool ctx_pipe_running;
+        private bool ctx_followup_needed;
         // HASH ALGORITHMS
         // ======================================================================================================
         private readonly string[] hash_algorithms = { "Binary", "Base64", "CRC-32", "CRC-64", "RIPEMD-160", "MD5", "SHA-1", "SHA-256", "SHA-384", "SHA-512" };
@@ -100,7 +109,7 @@ namespace Vimera {
             protected override void OnRenderItemCheck(ToolStripItemImageRenderEventArgs e){
                 Graphics g = e.Graphics;
                 g.SmoothingMode = SmoothingMode.AntiAlias;
-                float dpiScale = g.DpiX / 96f;
+                float dpiScale = TSDpiHelper.Scale(g.DpiX);
                 Rectangle rect = e.ImageRectangle;
                 using (Pen anti_alias_pen = new Pen(header_colors[2], 2.2f * dpiScale)){
                     anti_alias_pen.StartCap = LineCap.Round;
@@ -114,6 +123,8 @@ namespace Vimera {
             }
         }
         private class HeaderColors : ProfessionalColorTable{
+            public override Color MenuStripGradientBegin => header_colors[0];
+            public override Color MenuStripGradientEnd => header_colors[0];
             public override Color MenuItemSelected => header_colors[0];
             public override Color ToolStripDropDownBackground => header_colors[0];
             public override Color ImageMarginGradientBegin => header_colors[0];
@@ -133,28 +144,47 @@ namespace Vimera {
             public override Color SeparatorLight => header_colors[1];
             public override Color SeparatorDark => header_colors[1];
         }
-        // UI DPI CHANGER
+        // UI DPI (shared standard: TSDpiHelper)
         // ======================================================================================================
-        private int TSDPIChanger(int size){
-            return (int)(size * this.DeviceDpi / 96f);
+        private void ApplyDpiScaling(){
+            if (IsDisposed || Disposing) return;
+            try{
+                ScaleMainTables();
+                TSDpiHelper.ScaleToolStripRecursive(HeaderMenu, this.DeviceDpi);
+                try{
+                    int btn_dpi_height = FileHashAlgorithmSelect.Height + 2;
+                    FileHashExportHashsBtn.Height = btn_dpi_height;
+                    FileHashCompareBtn.Height = btn_dpi_height;
+                }catch{ }
+            }catch (Exception){ }
+        }
+        private void ScaleMainTables(int dpiOverride = 0){
+            try{
+                TSDpiHelper.ScaleDataGridView(FileHashDGV, new[]{ 250, 100 }, 32, dpiOverride: dpiOverride);
+            }catch (Exception){ }
+        }
+        protected override void OnDpiChanged(DpiChangedEventArgs e){
+            base.OnDpiChanged(e);
+            try{
+                this.SuspendLayout();
+                ApplyDpiScaling();
+                if (e.DeviceDpiNew != e.DeviceDpiOld)
+                    Theme_engine(theme);
+                MainContent?.PerformLayout();
+                try{ MainContent?.SelectedTab?.Invalidate(true); }catch{ }
+                this.ResumeLayout(true);
+                this.PerformLayout();
+                this.Invalidate(true);
+            }catch (Exception){ }
         }
         // LOAD SOFTWARE SETTINGS
         // ======================================================================================================
         private void RunSoftwareEngine(){
             try{
-                if (this.DeviceDpi / 96f >= 1.25){
-                    HeaderPanel.Padding = new Padding(TSDPIChanger(4), 0, 0, 0);
-                    FileHash.Padding = new Padding(TSDPIChanger(8), TSDPIChanger(8), TSDPIChanger(8), TSDPIChanger(8));
-                    TextHash.Padding = new Padding(TSDPIChanger(8), TSDPIChanger(8), TSDPIChanger(8), TSDPIChanger(8));
-                    HashCompare.Padding = new Padding(TSDPIChanger(8), TSDPIChanger(8), TSDPIChanger(8), TSDPIChanger(8));
+                ApplyDpiScaling();
+                foreach (TabPage tp in MainContent.TabPages){
+                    try{ var _ = tp.Handle; }catch{ }
                 }
-                // PAGE ARROW BYPASS
-                MainContent.SelectedTab = TextHash;
-                MainContent.SelectedTab = FileHash;
-                // BUTTONS DPI AWARE SETTINGS
-                int btn_dpi_height = FileHashAlgorithmSelect.Height + 2;
-                FileHashExportHashsBtn.Height = btn_dpi_height;
-                FileHashCompareBtn.Height = btn_dpi_height;
                 // FILE HASH PRELOAD
                 // ======================================================================================================
                 for (int i = 2; i <= hash_algorithms.Length - 1; i++){
@@ -167,16 +197,12 @@ namespace Vimera {
                 FileHashDGV.Columns.Add("FileHash", "FileHash");
                 FileHashDGV.Columns.Add("TextHash", "TextHash");
                 FileHashDGV.Columns.Add("HashCompare", "HashCompare");
-                FileHashDGV.RowTemplate.Height = (int)(32 * this.DeviceDpi / 96f);
-                FileHashDGV.Columns[0].Width = (int)(250 * this.DeviceDpi / 96f);
-                FileHashDGV.Columns[1].Width = (int)(100 * this.DeviceDpi / 96f);
-                foreach (DataGridViewColumn columnPadding in FileHashDGV.Columns){
-                    int scaledPadding = (int)(3 * this.DeviceDpi / 96f);
-                    columnPadding.DefaultCellStyle.Padding = new Padding(scaledPadding, 0, 0, 0);
-                }
                 foreach (DataGridViewColumn OSD_Column in FileHashDGV.Columns){
                     OSD_Column.SortMode = DataGridViewColumnSortMode.NotSortable;
                 }
+                // DGV WIDTH - HEIGHT - PADDING (applied after columns are created)
+                // ======================================================================================================
+                ApplyDpiScaling();
                 FileHashDGV.ClearSelection();
                 // TEXT HASH PRELOAD
                 // ======================================================================================================
@@ -230,6 +256,11 @@ namespace Vimera {
             WindowState = startup_status == 1 ? FormWindowState.Maximized : FormWindowState.Normal;
             windowedToolStripMenuItem.Checked = startup_status == 0;
             fullScreenToolStripMenuItem.Checked = startup_status == 1;
+            //
+            string context_menu_mode = software_read_settings.TSReadSettings(ts_settings_container, "ContextMenuStatus");
+            context_menu_status = int.TryParse(context_menu_mode, out int cms_status) && (cms_status == 0 || cms_status == 1) ? cms_status : 0;
+            contextMenuOffToolStripMenuItem.Checked = context_menu_status == 0;
+            contextMenuOnToolStripMenuItem.Checked = context_menu_status == 1;
         }
         // LOAD
         // ====================================================================================================== 
@@ -238,8 +269,11 @@ namespace Vimera {
             HeaderMenu.Cursor = Cursors.Hand;
             // LOAD MODULE
             RunSoftwareEngine();
-            //
-            Task.Run(() => Software_update_check(0));
+            // CONTEXT MENU INTEGRATION (registry repair + pipe server + startup args)
+            InitContextMenuIntegration();
+            // SOFTWARE UPDATE CHECK NATIVE
+            // ====================================
+            try { _ = Software_update_check(0); } catch (Exception) { }
         }
         // ======================================================================================================
         // FILE HASH
@@ -344,6 +378,22 @@ namespace Vimera {
                 }
                 FileHashSizer.Text = TS_FormatSize(file_hash_rows_total_size);
             }catch (Exception){ }
+        }
+        // FILE HASH UNHASHED ROW CHECK (context menu follow-up pass)
+        // ======================================================================================================
+        private bool HasUnhashedFileHashRows(){
+            try{
+                if (FileHashDGV.Columns.Count < 3)
+                    return false;
+                foreach (DataGridViewRow get_rows in FileHashDGV.Rows){
+                    if (get_rows.IsNewRow)
+                        continue;
+                    object hashValue = get_rows.Cells[2].Value;
+                    if (hashValue == null || string.IsNullOrWhiteSpace(hashValue.ToString()))
+                        return true;
+                }
+            }catch (Exception){ }
+            return false;
         }
         // CHECKSUM FILE IMPORTS
         // ======================================================================================================
@@ -485,9 +535,25 @@ namespace Vimera {
             FileHashTotalFiles = 0;
             //
             if (file_hash_cancel_async == 1){
+                try{ ctx_followup_needed = false; }catch{ }
                 File_hash_disabled_ui_cancel_async();
                 TS_MessageBoxEngine.TS_MessageBox(this, 1, software_lang.TSReadLangs("FileHashTool", "fht_hash_cancel"));
             }else{
+                bool ctx_followup = false;
+                try{
+                    ctx_followup = ctx_followup_needed;
+                    ctx_followup_needed = false;
+                }catch{ }
+                if (ctx_followup){
+                    try{
+                        if (HasUnhashedFileHashRows() && !FileHash_BG_Worker.IsBusy){
+                            File_hash_disabled_ui();
+                            try{ FileHashLoadFE_Panel.Width = 0; }catch{ }
+                            FileHash_BG_Worker.RunWorkerAsync();
+                            return;
+                        }
+                    }catch{ }
+                }
                 File_hash_enabled_ui();
                 TS_MessageBoxEngine.TS_MessageBox(this, 1, software_lang.TSReadLangs("FileHashTool", "fht_hash_success"));
             }
@@ -976,6 +1042,19 @@ namespace Vimera {
                 }
             }catch (Exception) { }
         }
+        private void MainContent_SelectedIndexChanged(object sender, EventArgs e){
+            try{
+                // Refresh the selected page's DPI/layout (it may have missed the DPI change while hidden)
+                int pageDpi = this.DeviceDpi;
+                if (pageDpi <= 0) pageDpi = TSDpiHelper.BaseDpi;
+                ScaleMainTables(pageDpi);
+                var selectedTab = MainContent.SelectedTab;
+                if (selectedTab != null && !selectedTab.IsDisposed){
+                    selectedTab.PerformLayout();
+                    selectedTab.Invalidate(true);
+                }
+            }catch (Exception){ }
+        }
         // DYNAMIC LEFT MENU PRELOADER
         // ======================================================================================================
         private void Left_menu_preloader(int target_menu, object sender){
@@ -1045,6 +1124,11 @@ namespace Vimera {
                 TSSettingsModule software_setting_save = new TSSettingsModule(ts_sf);
                 software_setting_save.TSWriteSettings(ts_settings_container, "LanguageStatus", lang_code);
             }catch (Exception){ }
+            // REFRESH CONTEXT MENU LABELS IN THE NEW UI LANGUAGE
+            try{
+                if (context_menu_status == 1)
+                    TSContextMenuModule.Register(BuildCtxLabels());
+            }catch (Exception){ }
             // LANG CHANGE NOTIFICATION
             // TSGetLangs software_lang = new TSGetLangs(lang_path);
             // DialogResult lang_change_message = TS_MessageBoxEngine.TS_MessageBox(this, 5, string.Format(software_lang.TSReadLangs("LangChange", "lang_change_notification"), "\n\n", "\n\n"));
@@ -1092,8 +1176,12 @@ namespace Vimera {
                 startupToolStripMenuItem.Text = software_lang.TSReadLangs("HeaderMenu", "header_menu_start");
                 windowedToolStripMenuItem.Text = software_lang.TSReadLangs("HeaderViewMode", "header_view_mode_windowed");
                 fullScreenToolStripMenuItem.Text = software_lang.TSReadLangs("HeaderViewMode", "header_view_mode_full_screen");
+                // CONTEXT MENU
+                contextMenuToolStripMenuItem.Text = software_lang.TSReadLangs("HeaderContextMenu", "header_context_menu");
+                contextMenuOnToolStripMenuItem.Text = software_lang.TSReadLangs("HeaderContextMenu", "header_context_menu_on");
+                contextMenuOffToolStripMenuItem.Text = software_lang.TSReadLangs("HeaderContextMenu", "header_context_menu_off");
                 // UPDATE
-                checkForUpdateToolStripMenuItem.Text = software_lang.TSReadLangs("HeaderMenu", "header_menu_update");
+                checkForUpdatesToolStripMenuItem.Text = software_lang.TSReadLangs("HeaderMenu", "header_menu_update");
                 // DONATE
                 donateToolStripMenuItem.Text = software_lang.TSReadLangs("HeaderMenu", "header_menu_donate");
                 // ABOUT
@@ -1162,7 +1250,18 @@ namespace Vimera {
         private void DarkThemeToolStripMenuItem_Click(object sender, EventArgs e){
             themeSystem = 0; Theme_engine(0); SaveTheme(0); Select_theme_active(sender);
         }
-        private void TSUseSystemTheme() { if (themeSystem == 2) Theme_engine(TSThemeModeHelper.GetSystemTheme(2)); }
+        private void SystemEvents_UserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e){
+            TSUseSystemTheme();
+        }
+        private void TSUseSystemTheme(){
+            if (themeSystem != 2) return;
+            if (IsDisposed || Disposing) return;
+            if (InvokeRequired){
+                try { BeginInvoke(new Action(() => TSUseSystemTheme())); } catch { }
+                return;
+            }
+            Theme_engine(TSThemeModeHelper.GetSystemTheme(2));
+        }
         private void SaveTheme(int ts){
             // SAVE CURRENT THEME
             try{
@@ -1174,6 +1273,7 @@ namespace Vimera {
         // ======================================================================================================
         private void Theme_engine(int ts){
             try{
+                try { TSDpiHelper.ScaleToolStripRecursive(HeaderMenu, this.DeviceDpi); } catch { }
                 theme = ts;
                 //
                 TSThemeModeHelper.SetThemeMode(ts == 0);
@@ -1181,13 +1281,14 @@ namespace Vimera {
                 //
                 if (theme == 1){
                     // SETTINGS
-                    TSImageRenderer(settingsToolStripMenuItem, Properties.Resources.tm_settings_light, 0, ContentAlignment.MiddleRight);
-                    TSImageRenderer(themeToolStripMenuItem, Properties.Resources.tm_theme_light, 0, ContentAlignment.MiddleRight);
-                    TSImageRenderer(languageToolStripMenuItem, Properties.Resources.tm_language_light, 0, ContentAlignment.MiddleRight);
-                    TSImageRenderer(startupToolStripMenuItem, Properties.Resources.tm_startup_light, 0, ContentAlignment.MiddleRight);
-                    TSImageRenderer(checkForUpdateToolStripMenuItem, Properties.Resources.tm_update_light, 0, ContentAlignment.MiddleRight);
-                    TSImageRenderer(donateToolStripMenuItem, Properties.Resources.tm_donate_light, 0, ContentAlignment.MiddleRight);
-                    TSImageRenderer(aboutToolStripMenuItem, Properties.Resources.tm_about_light, 0, ContentAlignment.MiddleRight);
+                    TSImageRenderer(settingsToolStripMenuItem, Properties.Resources.tm_settings_light, 0, ContentAlignment.MiddleCenter);
+                    TSImageRenderer(themeToolStripMenuItem, Properties.Resources.tm_theme_light, 0, ContentAlignment.MiddleCenter);
+                    TSImageRenderer(languageToolStripMenuItem, Properties.Resources.tm_language_light, 0, ContentAlignment.MiddleCenter);
+                    TSImageRenderer(startupToolStripMenuItem, Properties.Resources.tm_startup_light, 0, ContentAlignment.MiddleCenter);
+                    TSImageRenderer(contextMenuToolStripMenuItem, Properties.Resources.tm_context_menu_light, 0, ContentAlignment.MiddleCenter);
+                    TSImageRenderer(checkForUpdatesToolStripMenuItem, Properties.Resources.tm_update_light, 0, ContentAlignment.MiddleCenter);
+                    TSImageRenderer(donateToolStripMenuItem, Properties.Resources.tm_donate_light, 0, ContentAlignment.MiddleCenter);
+                    TSImageRenderer(aboutToolStripMenuItem, Properties.Resources.tm_about_light, 0, ContentAlignment.MiddleCenter);
                     // THEME LOGOS
                     TSImageRenderer(FileHashBtn, Properties.Resources.lm_file_hash_light, 15, ContentAlignment.MiddleLeft);
                     TSImageRenderer(TextHashBtn, Properties.Resources.lm_text_hash_light, 15, ContentAlignment.MiddleLeft);
@@ -1202,13 +1303,14 @@ namespace Vimera {
                     TSImageRenderer(TextHashResultCopyBtn, Properties.Resources.ct_copy_light, 22, ContentAlignment.MiddleRight);
                 }else if (theme == 0){
                     // SETTINGS
-                    TSImageRenderer(settingsToolStripMenuItem, Properties.Resources.tm_settings_dark, 0, ContentAlignment.MiddleRight);
-                    TSImageRenderer(themeToolStripMenuItem, Properties.Resources.tm_theme_dark, 0, ContentAlignment.MiddleRight);
-                    TSImageRenderer(languageToolStripMenuItem, Properties.Resources.tm_language_dark, 0, ContentAlignment.MiddleRight);
-                    TSImageRenderer(startupToolStripMenuItem, Properties.Resources.tm_startup_dark, 0, ContentAlignment.MiddleRight);
-                    TSImageRenderer(checkForUpdateToolStripMenuItem, Properties.Resources.tm_update_dark, 0, ContentAlignment.MiddleRight);
-                    TSImageRenderer(donateToolStripMenuItem, Properties.Resources.tm_donate_dark, 0, ContentAlignment.MiddleRight);
-                    TSImageRenderer(aboutToolStripMenuItem, Properties.Resources.tm_about_dark, 0, ContentAlignment.MiddleRight);
+                    TSImageRenderer(settingsToolStripMenuItem, Properties.Resources.tm_settings_dark, 0, ContentAlignment.MiddleCenter);
+                    TSImageRenderer(themeToolStripMenuItem, Properties.Resources.tm_theme_dark, 0, ContentAlignment.MiddleCenter);
+                    TSImageRenderer(languageToolStripMenuItem, Properties.Resources.tm_language_dark, 0, ContentAlignment.MiddleCenter);
+                    TSImageRenderer(startupToolStripMenuItem, Properties.Resources.tm_startup_dark, 0, ContentAlignment.MiddleCenter);
+                    TSImageRenderer(contextMenuToolStripMenuItem, Properties.Resources.tm_context_menu_dark, 0, ContentAlignment.MiddleCenter);
+                    TSImageRenderer(checkForUpdatesToolStripMenuItem, Properties.Resources.tm_update_dark, 0, ContentAlignment.MiddleCenter);
+                    TSImageRenderer(donateToolStripMenuItem, Properties.Resources.tm_donate_dark, 0, ContentAlignment.MiddleCenter);
+                    TSImageRenderer(aboutToolStripMenuItem, Properties.Resources.tm_about_dark, 0, ContentAlignment.MiddleCenter);
                     // THEME LOGOS
                     TSImageRenderer(FileHashBtn, Properties.Resources.lm_file_hash_dark, 15, ContentAlignment.MiddleLeft);
                     TSImageRenderer(TextHashBtn, Properties.Resources.lm_text_hash_dark, 15, ContentAlignment.MiddleLeft);
@@ -1485,12 +1587,279 @@ namespace Vimera {
                 software_setting_save.TSWriteSettings(ts_settings_container, "StartupStatus", get_startup_value);
             }catch (Exception){ }
         }
-        // CHECK UPDATE
+        // CONTEXT MENU SETTINGS (classic right-click, HKCU only)
         // ======================================================================================================
-        private void CheckForUpdateToolStripMenuItem_Click(object sender, EventArgs e){
-            Task.Run(() => Software_update_check(1));
+        private ToolStripMenuItem selected_context_menu_mode = null;
+        private void Select_context_menu_mode_active(object target_context_menu_mode){
+            if (target_context_menu_mode == null)
+                return;
+            ToolStripMenuItem clicked_context_menu_mode = (ToolStripMenuItem)target_context_menu_mode;
+            if (selected_context_menu_mode == clicked_context_menu_mode)
+                return;
+            Select_context_menu_mode_deactive();
+            selected_context_menu_mode = clicked_context_menu_mode;
+            selected_context_menu_mode.Checked = true;
         }
-        public async void Software_update_check(int _check_update_ui){
+        private void Select_context_menu_mode_deactive(){
+            foreach (ToolStripMenuItem disabled_context_menu in contextMenuToolStripMenuItem.DropDownItems){
+                disabled_context_menu.Checked = false;
+            }
+        }
+        private void ContextMenuOnToolStripMenuItem_Click(object sender, EventArgs e){
+            if (context_menu_status == 1)
+                return;
+            try{
+                if (!TSContextMenuModule.Register(BuildCtxLabels())){
+                    TS_MessageBoxEngine.TS_MessageBox(this, 3, "Context menu could not be registered." + Environment.NewLine + "Registry write failed.");
+                    return;
+                }
+            }catch (Exception ex){
+                try{ TS_MessageBoxEngine.TS_MessageBox(this, 3, ex.Message); }catch{ }
+                return;
+            }
+            context_menu_status = 1;
+            Context_menu_mode_settings("1");
+            Select_context_menu_mode_active(sender);
+        }
+        private void ContextMenuOffToolStripMenuItem_Click(object sender, EventArgs e){
+            if (context_menu_status == 0)
+                return;
+            try{
+                TSContextMenuModule.Unregister();
+            }catch (Exception){ }
+            context_menu_status = 0;
+            Context_menu_mode_settings("0");
+            Select_context_menu_mode_active(sender);
+        }
+        private void Context_menu_mode_settings(string get_context_menu_value){
+            try{
+                TSSettingsModule software_setting_save = new TSSettingsModule(ts_sf);
+                software_setting_save.TSWriteSettings(ts_settings_container, "ContextMenuStatus", get_context_menu_value);
+            }catch (Exception){ }
+        }
+        // CONTEXT MENU LABELS FROM THE ACTIVE UI LANGUAGE
+        // ======================================================================================================
+        private TSContextMenuModule.CtxLabels BuildCtxLabels(){
+            try{
+                TSGetLangs software_lang = new TSGetLangs(lang_path);
+                return TSContextMenuModule.BuildLabels(software_lang, Application.ProductName);
+            }catch (Exception){ }
+            return TSContextMenuModule.DefaultLabels(Application.ProductName);
+        }
+        // CONTEXT MENU INTEGRATION ENGINE
+        // ======================================================================================================
+        private void InitContextMenuIntegration(){
+            try{
+                int cms = context_menu_status;
+                try{
+                    Task.Run(() => {
+                        try{ TSContextMenuModule.RepairIfNeeded(cms == 1, BuildCtxLabels()); }catch{ }
+                    });
+                }catch{ }
+                StartCtxPipeServer();
+                try{
+                    string[] startFiles = null;
+                    int startHash = -1;
+                    try{ startFiles = Program.StartupFiles; startHash = Program.StartupHashMode; }catch{ }
+                    if (startFiles != null && startFiles.Length > 0)
+                        EnqueueCtxFiles(startHash, startFiles);
+                }catch{ }
+            }catch{ }
+        }
+        private void StartCtxPipeServer(){
+            try{
+                if (ctx_pipe_running)
+                    return;
+                ctx_pipe_running = true;
+                Task.Run(() => {
+                    while (ctx_pipe_running){
+                        try{
+                            using (var server = new System.IO.Pipes.NamedPipeServerStream(TSContextMenuModule.PipeName, System.IO.Pipes.PipeDirection.In, 1, System.IO.Pipes.PipeTransmissionMode.Byte, System.IO.Pipes.PipeOptions.Asynchronous)){
+                                server.WaitForConnection();
+                                try{
+                                    using (var reader = new System.IO.BinaryReader(server, System.Text.Encoding.UTF8)){
+                                        int pipeHash = reader.ReadInt32();
+                                        int pipeCount = reader.ReadInt32();
+                                        if (pipeCount < 0 || pipeCount > 20000)
+                                            continue;
+                                        List<string> pipeFiles = new List<string>();
+                                        for (int i = 0; i < pipeCount; i++){
+                                            try{ pipeFiles.Add(reader.ReadString()); }
+                                            catch{ break; }
+                                        }
+                                        int copyHash = pipeHash;
+                                        List<string> copyFiles = new List<string>(pipeFiles);
+                                        try{
+                                            if (!IsDisposed && !Disposing){
+                                                BeginInvoke(new Action(() => {
+                                                    try{
+                                                        if (copyFiles == null || copyFiles.Count == 0){
+                                                            if (WindowState == FormWindowState.Minimized)
+                                                                WindowState = FormWindowState.Normal;
+                                                            BringToFront();
+                                                            Activate();
+                                                        }else{
+                                                            EnqueueCtxFiles(copyHash, copyFiles);
+                                                        }
+                                                    }catch{ }
+                                                }));
+                                            }
+                                        }catch{ }
+                                    }
+                                }catch{ }
+                            }
+                        }catch{
+                            try{ Thread.Sleep(150); }catch{ }
+                        }
+                        try{
+                            if (IsDisposed || Disposing){
+                                ctx_pipe_running = false;
+                                break;
+                            }
+                        }catch{ break; }
+                    }
+                });
+            }catch{ }
+        }
+        private void EnqueueCtxFiles(int hashMode, IEnumerable<string> files){
+            try{
+                if (files == null)
+                    return;
+                lock (ctx_buffer_lock){
+                    if (hashMode >= 0)
+                        ctx_hash_buffer = hashMode;
+                    foreach (string file in files){
+                        if (!string.IsNullOrWhiteSpace(file))
+                            ctx_file_buffer.Add(file);
+                    }
+                    if (ctx_file_buffer.Count == 0)
+                        return;
+                    try{
+                        if (ctx_aggregator == null){
+                            ctx_aggregator = new System.Windows.Forms.Timer{
+                                Interval = 150
+                            };
+                            ctx_aggregator.Tick += (s, e) => {
+                                try{ ctx_aggregator.Stop(); }catch{ }
+                                FlushCtxBuffer();
+                            };
+                        }
+                        ctx_aggregator.Stop();
+                        ctx_aggregator.Start();
+                    }catch{ }
+                }
+            }catch{ }
+        }
+        private void FlushCtxBuffer(){
+            List<string> snapshot = null;
+            int snapshotHash = -1;
+            lock (ctx_buffer_lock){
+                if (ctx_file_buffer.Count == 0)
+                    return;
+                snapshot = new List<string>(ctx_file_buffer);
+                ctx_file_buffer.Clear();
+                snapshotHash = ctx_hash_buffer;
+            }
+            LoadCtxFilesIntoTable(snapshotHash, snapshot);
+        }
+        private void LoadCtxFilesIntoTable(int hashMode, List<string> files){
+            if (IsDisposed || Disposing)
+                return;
+            if (InvokeRequired){
+                try{ BeginInvoke(new Action(() => LoadCtxFilesIntoTable(hashMode, files))); }catch{ }
+                return;
+            }
+            try{
+                if (files == null || files.Count == 0)
+                    return;
+                // expand directories, dedupe, keep natural order
+                List<string> expanded = new List<string>();
+                HashSet<string> seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                foreach (string raw in files){
+                    if (string.IsNullOrWhiteSpace(raw))
+                        continue;
+                    string target = raw.Trim().Trim('"');
+                    if (target.Length == 0)
+                        continue;
+                    try{
+                        if (Directory.Exists(target)){
+                            string[] inner = Directory.GetFiles(target, "*.*", SearchOption.AllDirectories)
+                                .OrderBy(file => TSNaturalSortKey(file)).ToArray();
+                            foreach (string innerFile in inner){
+                                if (!seen.Contains(innerFile) && File.Exists(innerFile)){
+                                    seen.Add(innerFile);
+                                    expanded.Add(innerFile);
+                                }
+                            }
+                        }else if (File.Exists(target)){
+                            if (!seen.Contains(target)){
+                                seen.Add(target);
+                                expanded.Add(target);
+                            }
+                        }
+                    }catch{ }
+                }
+                if (expanded.Count == 0)
+                    return;
+                // switch to FileHash tab
+                try{
+                    if (MainContent.SelectedTab != FileHash){
+                        MainContent.SelectedTab = FileHash;
+                        menu_btns = 1;
+                        menu_rp = 1;
+                        try{
+                            TSGetLangs software_lang = new TSGetLangs(lang_path);
+                            HeaderText.Text = software_lang.TSReadLangs("Header", "header_file_hash");
+                        }catch{ }
+                        Header_image_reloader(1);
+                    }
+                }catch{ }
+                // select algorithm from context menu
+                try{
+                    if (hashMode >= 0 && hashMode < FileHashAlgorithmSelect.Items.Count){
+                        if (FileHashAlgorithmSelect.SelectedIndex != hashMode)
+                            FileHashAlgorithmSelect.SelectedIndex = hashMode;
+                        else
+                            file_hash_algorithm_mode = hashMode;
+                    }
+                }catch{ }
+                bool isBusy = false;
+                try{ isBusy = FileHash_BG_Worker.IsBusy; }catch{ }
+                if (!isBusy){
+                    try{ File_select_clear_function(); }catch{ }
+                }
+                foreach (string file in expanded){
+                    try{ File_select_process_function(file); }catch{ }
+                }
+                try{ FileHashRowsTotalSize(); FileHashDGV.ClearSelection(); }catch{ }
+                if (isBusy){
+                    // arrived mid-run: rows are appended, completion handler chains a follow-up pass
+                    try{ ctx_followup_needed = true; }catch{ }
+                }
+                else{
+                    try{
+                        if (FileHashDGV.Rows.Count > 0 && !FileHash_BG_Worker.IsBusy){
+                            FileHashStartBtn.Enabled = true;
+                            FileHashStartBtn.PerformClick();
+                        }
+                    }catch{ }
+                }
+                try{
+                    if (WindowState == FormWindowState.Minimized)
+                        WindowState = FormWindowState.Normal;
+                    BringToFront();
+                    Activate();
+                }catch{ }
+            }catch{ }
+        }
+        // UPDATE CHECK ENGINE
+        // ======================================================================================================
+        private void CheckForUpdatesToolStripMenuItem_Click(object sender, EventArgs e){
+            try{
+                _ = Software_update_check(1);
+            }catch (Exception){ }
+        }
+        public async Task Software_update_check(int _check_update_ui){
             try{
                 TSGetLangs software_lang = new TSGetLangs(lang_path);
                 SetUpdateMenuEnabled(false);
@@ -1504,7 +1873,7 @@ namespace Vimera {
                     handler.UseProxy = false;
                     using (HttpClient httpClient = new HttpClient(handler)){
                         httpClient.Timeout = TimeSpan.FromSeconds(15);
-                        httpClient.DefaultRequestHeaders.CacheControl = new CacheControlHeaderValue{ NoCache = true, NoStore = true, MustRevalidate = true };
+                        httpClient.DefaultRequestHeaders.CacheControl = new CacheControlHeaderValue { NoCache = true, NoStore = true, MustRevalidate = true };
                         httpClient.DefaultRequestHeaders.Pragma.ParseAdd("no-cache");
                         string versionUrl = TS_LinkSystem.github_link_lv;
                         versionUrl += (versionUrl.Contains("?") ? "&" : "?") + "_ts=" + DateTimeOffset.UtcNow.ToUnixTimeSeconds();
@@ -1547,18 +1916,23 @@ namespace Vimera {
                 }
             }catch (Exception ex){
                 Debug.WriteLine(ex, "Software_update_check()");
-                TSGetLangs software_lang = new TSGetLangs(lang_path);
-                TS_MessageBoxEngine.TS_MessageBox(this, 3, string.Format(software_lang.TSReadLangs("SoftwareUpdate", "su_error"), "\n\n", ex.Message), string.Format(software_lang.TSReadLangs("SoftwareUpdate", "su_title"), Application.ProductName));
+                if (_check_update_ui == 1 && !IsDisposed && !Disposing){
+                    TSGetLangs software_lang = new TSGetLangs(lang_path);
+                    TS_MessageBoxEngine.TS_MessageBox(this, 3, string.Format(software_lang.TSReadLangs("SoftwareUpdate", "su_error"), "\n\n", ex.Message), string.Format(software_lang.TSReadLangs("SoftwareUpdate", "su_title"), Application.ProductName));
+                }
             }finally{
                 SetUpdateMenuEnabled(true);
             }
         }
         private void SetUpdateMenuEnabled(bool enabled){
-            if (InvokeRequired){
-                BeginInvoke(new Action(() => checkForUpdateToolStripMenuItem.Enabled = enabled));
-            }else{
-                checkForUpdateToolStripMenuItem.Enabled = enabled;
-            }
+            try{
+                if (IsDisposed || Disposing) return;
+                if (InvokeRequired){
+                    BeginInvoke(new Action(() => checkForUpdatesToolStripMenuItem.Enabled = enabled));
+                }else{
+                    checkForUpdatesToolStripMenuItem.Enabled = enabled;
+                }
+            }catch { }
         }
         // DONATE LINK
         // ======================================================================================================
@@ -1592,7 +1966,11 @@ namespace Vimera {
         }
         // EXIT
         // ======================================================================================================
-        private void Software_exit(){ Application.Exit(); }
-        private void Vimera_FormClosing(object sender, FormClosingEventArgs e){ Software_exit(); }
+        private void Vimera_FormClosing(object sender, FormClosingEventArgs e){
+            try { ctx_pipe_running = false; } catch { }
+            try { if (ctx_aggregator != null){ ctx_aggregator.Stop(); ctx_aggregator.Dispose(); } } catch { }
+            try { SystemEvents.UserPreferenceChanged -= SystemEvents_UserPreferenceChanged; } catch { }
+            Application.Exit();
+        }
     }
 }

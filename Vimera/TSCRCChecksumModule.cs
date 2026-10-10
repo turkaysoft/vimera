@@ -21,8 +21,8 @@ namespace Vimera{
                 }
                 Crc32Table[i] = temp;
             }
-            // CRC64 Table Create (ECMA-182)
-            ulong poly64 = 0x42F0E1EBA9EA3693;
+            // CRC64 Table Create (CRC-64/XZ, reflected ECMA poly)
+            ulong poly64 = 0xC96C5795D7870F42;
             Crc64Table = new ulong[256];
             for (ulong i = 0; i < 256; i++){
                 ulong temp = i;
@@ -48,11 +48,11 @@ namespace Vimera{
         public static ulong CalculateCrc64(string input){
             if (input == null) throw new ArgumentNullException(nameof(input));
             byte[] bytes = Encoding.UTF8.GetBytes(input);
-            ulong crc = 0;
+            ulong crc = 0xFFFFFFFFFFFFFFFF;
             for (int i = 0; i < bytes.Length; i++){
                 crc = (crc >> 8) ^ Crc64Table[(crc & 0xFF) ^ bytes[i]];
             }
-            return crc;
+            return ~crc;
         }
         public static uint ComputeCrc32(Stream stream){
             uint crc = 0xFFFFFFFF;
@@ -67,7 +67,7 @@ namespace Vimera{
             return ~crc;
         }
         public static ulong ComputeCrc64(Stream stream){
-            ulong crc = 0;
+            ulong crc = 0xFFFFFFFFFFFFFFFF;
             const int bufferSize = 4096;
             byte[] buffer = new byte[bufferSize];
             int bytesRead;
@@ -76,7 +76,7 @@ namespace Vimera{
                     crc = (crc >> 8) ^ Crc64Table[(crc & 0xFF) ^ buffer[i]];
                 }
             }
-            return crc;
+            return ~crc;
         }
     }
     // CRC32 Class - Now sharing the table from TSCrcChecksumModule
@@ -98,10 +98,10 @@ namespace Vimera{
         protected override byte[] HashFinal(){
             uint finalCrc = ~crc;
             byte[] bytes = new byte[4];
-            bytes[0] = (byte)(finalCrc);
-            bytes[1] = (byte)(finalCrc >> 8);
-            bytes[2] = (byte)(finalCrc >> 16);
-            bytes[3] = (byte)(finalCrc >> 24);
+            bytes[0] = (byte)(finalCrc >> 24);
+            bytes[1] = (byte)(finalCrc >> 16);
+            bytes[2] = (byte)(finalCrc >> 8);
+            bytes[3] = (byte)(finalCrc);
             return bytes;
         }
     }
@@ -113,7 +113,7 @@ namespace Vimera{
             Initialize();
         }
         public override void Initialize(){
-            crc = 0;
+            crc = 0xFFFFFFFFFFFFFFFF;
         }
         protected override void HashCore(byte[] array, int ibStart, int cbSize){
             for (int i = 0; i < cbSize; i++){
@@ -122,15 +122,16 @@ namespace Vimera{
             }
         }
         protected override byte[] HashFinal(){
+            ulong finalCrc = ~crc;
             byte[] bytes = new byte[8];
-            bytes[0] = (byte)(crc);
-            bytes[1] = (byte)(crc >> 8);
-            bytes[2] = (byte)(crc >> 16);
-            bytes[3] = (byte)(crc >> 24);
-            bytes[4] = (byte)(crc >> 32);
-            bytes[5] = (byte)(crc >> 40);
-            bytes[6] = (byte)(crc >> 48);
-            bytes[7] = (byte)(crc >> 56);
+            bytes[0] = (byte)(finalCrc >> 56);
+            bytes[1] = (byte)(finalCrc >> 48);
+            bytes[2] = (byte)(finalCrc >> 40);
+            bytes[3] = (byte)(finalCrc >> 32);
+            bytes[4] = (byte)(finalCrc >> 24);
+            bytes[5] = (byte)(finalCrc >> 16);
+            bytes[6] = (byte)(finalCrc >> 8);
+            bytes[7] = (byte)(finalCrc);
             return bytes;
         }
     }

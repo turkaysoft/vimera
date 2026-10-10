@@ -21,7 +21,6 @@
     <PlatformTarget>x64</PlatformTarget>
     <LangVersion>7.3</LangVersion>
     <ErrorReport>prompt</ErrorReport>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <OutputPath>bin\x64\Release\</OutputPath>
@@ -31,7 +30,6 @@
     <PlatformTarget>x64</PlatformTarget>
     <LangVersion>7.3</LangVersion>
     <ErrorReport>prompt</ErrorReport>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|ARM64'">
     <DebugSymbols>true</DebugSymbols>
@@ -41,7 +39,6 @@
     <PlatformTarget>ARM64</PlatformTarget>
     <LangVersion>7.3</LangVersion>
     <ErrorReport>prompt</ErrorReport>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|ARM64'">
     <OutputPath>bin\ARM64\Release\</OutputPath>
@@ -51,7 +48,6 @@
     <PlatformTarget>ARM64</PlatformTarget>
     <LangVersion>7.3</LangVersion>
     <ErrorReport>prompt</ErrorReport>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>VimeraLogo.ico</ApplicationIcon>
@@ -70,10 +66,9 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="TSContextMenuModule.cs" />
     <Compile Include="TSCRCChecksumModule.cs" />
-    <Compile Include="TSCustomControls.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="TSCustomControls.cs" />
     <Compile Include="TSModules.cs" />
     <Compile Include="VimeraMain.cs">
       <SubType>Form</SubType>
@@ -115,7 +110,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="VimeraLogo.ico" />
-    <None Include="vimera_images\vimera_ui\ts_material\ts_close.png" />
     <None Include="vimera_images\vimera_ui\theme_light\tm_update_light.png" />
     <None Include="vimera_images\vimera_ui\theme_light\tm_theme_light.png" />
     <None Include="vimera_images\vimera_ui\theme_light\tm_startup_light.png" />

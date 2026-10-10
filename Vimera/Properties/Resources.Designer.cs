@@ -343,6 +343,26 @@ namespace Vimera.Properties {
         /// <summary>
         ///   System.Drawing.Bitmap türünde yerelleştirilmiş bir kaynak arar.
         /// </summary>
+        internal static System.Drawing.Bitmap tm_context_menu_dark {
+            get {
+                object obj = ResourceManager.GetObject("tm_context_menu_dark", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   System.Drawing.Bitmap türünde yerelleştirilmiş bir kaynak arar.
+        /// </summary>
+        internal static System.Drawing.Bitmap tm_context_menu_light {
+            get {
+                object obj = ResourceManager.GetObject("tm_context_menu_light", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   System.Drawing.Bitmap türünde yerelleştirilmiş bir kaynak arar.
+        /// </summary>
         internal static System.Drawing.Bitmap tm_donate_dark {
             get {
                 object obj = ResourceManager.GetObject("tm_donate_dark", resourceCulture);
@@ -486,16 +506,6 @@ namespace Vimera.Properties {
         internal static System.Drawing.Bitmap ts_about {
             get {
                 object obj = ResourceManager.GetObject("ts_about", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   System.Drawing.Bitmap türünde yerelleştirilmiş bir kaynak arar.
-        /// </summary>
-        internal static System.Drawing.Bitmap ts_close {
-            get {
-                object obj = ResourceManager.GetObject("ts_close", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
