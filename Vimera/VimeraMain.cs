@@ -300,30 +300,63 @@ namespace Vimera {
                 try{
                     var select_files = (string[])e.Data.GetData(DataFormats.FileDrop);
                     File_select_clear_function();
-                    foreach (var path in select_files){
-                        if (Directory.Exists(path)){
-                            string[] file_list = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories);
-                            var sorted_file_list = file_list.OrderBy(file => TSNaturalSortKey(file)).ToArray();
-                            foreach (string file in sorted_file_list){
-                                string ext = Path.GetExtension(file);
-                                if (checksumExtensions.Contains(ext)){
-                                    ChecksumFileImport(file);
-                                }else{
-                                    File_select_process_function(file);
-                                }
-                            }
-                        }else if (File.Exists(path)){
-                            string ext = Path.GetExtension(path);
+                    File_hash_process_paths(select_files);
+                }catch (Exception){ }
+            }
+        }
+        // FILE HASH CLIPBOARD PASTE PROCESS (CTRL+V)
+        // ======================================================================================================
+        private bool File_hash_paste_clipboard(){
+            try{
+                if (!Clipboard.ContainsFileDropList())
+                    return false;
+                var paste_files = Clipboard.GetFileDropList();
+                if (paste_files == null || paste_files.Count == 0)
+                    return false;
+                File_select_clear_function();
+                File_hash_process_paths(paste_files.Cast<string>());
+                return true;
+            }catch (Exception){
+                return false;
+            }
+        }
+        // FILE HASH PROCESS SELECTED PATHS (SHARED BY DRAG & DROP AND CLIPBOARD PASTE)
+        // ======================================================================================================
+        private void File_hash_process_paths(IEnumerable<string> select_paths){
+            try{
+                foreach (var path in select_paths){
+                    if (Directory.Exists(path)){
+                        string[] file_list = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories);
+                        var sorted_file_list = file_list.Where(file => !Is_hidden_system_file(file)).OrderBy(file => TSNaturalSortKey(file)).ToArray();
+                        foreach (string file in sorted_file_list){
+                            string ext = Path.GetExtension(file);
                             if (checksumExtensions.Contains(ext)){
-                                ChecksumFileImport(path);
+                                ChecksumFileImport(file);
                             }else{
-                                File_select_process_function(path);
+                                File_select_process_function(file);
                             }
                         }
+                    }else if (File.Exists(path)){
+                        string ext = Path.GetExtension(path);
+                        if (checksumExtensions.Contains(ext)){
+                            ChecksumFileImport(path);
+                        }else{
+                            File_select_process_function(path);
+                        }
                     }
-                    FileHashRowsTotalSize();
-                    FileHashDGV.ClearSelection();
-                }catch (Exception){ }
+                }
+                FileHashRowsTotalSize();
+                FileHashDGV.ClearSelection();
+            }catch (Exception){ }
+        }
+        // FILE HASH HIDDEN / SYSTEM FILE CHECK (SKIPPED DURING FOLDER SCAN)
+        // ======================================================================================================
+        private static bool Is_hidden_system_file(string filePath){
+            try{
+                FileAttributes attributes = File.GetAttributes(filePath);
+                return (attributes & (FileAttributes.Hidden | FileAttributes.System)) != 0;
+            }catch (Exception){
+                return false;
             }
         }
         // FILE HASH SELECT FILE BTN
@@ -1077,9 +1110,24 @@ namespace Vimera {
                 Header_image_reloader(menu_btns);
             }catch (Exception){ }
         }
+        // INTERFACE NAVIGATION: Returns the innermost focused control (used to skip paste overcomes on text inputs)
+        // ======================================================================================================
+        private Control Get_focused_control(){
+            Control focused = this;
+            while (focused is ContainerControl container && container.ActiveControl != null){
+                focused = container.ActiveControl;
+            }
+            return focused;
+        }
         // INTERFACE NAVIGATION: Prevents focus traps and enables cyclic page switching with arrow keys
         // ======================================================================================================
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData){
+            // FILE HASH PAGE: CTRL+V PASTES COPIED FILES LIKE DRAG & DROP
+            if (keyData == (Keys.Control | Keys.V) && MainContent.SelectedTab == FileHash && FileHashPanel.AllowDrop && !(Get_focused_control() is TextBoxBase)){
+                if (File_hash_paste_clipboard()){
+                    return true;
+                }
+            }
             if (keyData == Keys.Up || keyData == Keys.Down || keyData == Keys.Left || keyData == Keys.Right){
                 int currentIndex = MainContent.SelectedIndex;
                 int totalTabs = MainContent.TabCount;
@@ -1784,6 +1832,7 @@ namespace Vimera {
                     try{
                         if (Directory.Exists(target)){
                             string[] inner = Directory.GetFiles(target, "*.*", SearchOption.AllDirectories)
+                                .Where(file => !Is_hidden_system_file(file))
                                 .OrderBy(file => TSNaturalSortKey(file)).ToArray();
                             foreach (string innerFile in inner){
                                 if (!seen.Contains(innerFile) && File.Exists(innerFile)){
